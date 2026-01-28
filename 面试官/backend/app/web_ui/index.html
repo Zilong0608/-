@@ -109,6 +109,39 @@
         padding: 10px;
         min-height: 120px;
       }
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 12, 24, 0.72);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .modal-card {
+        width: min(860px, 92vw);
+        max-height: 82vh;
+        overflow: auto;
+        background: var(--panel);
+        border-radius: 12px;
+        border: 1px solid #273152;
+        padding: 16px;
+        box-shadow: 0 24px 60px rgba(5, 8, 20, 0.6);
+      }
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      .modal-close {
+        width: auto;
+        padding: 6px 12px;
+        border-radius: 6px;
+        background: #2b3456;
+        border: 1px solid #3a466c;
+      }
+      .hidden { display: none !important; }
       @media (max-width: 980px) {
         .layout { grid-template-columns: 1fr; }
       }
@@ -119,16 +152,20 @@
     <div class="layout">
       <section class="panel">
         <h3>面试配置</h3>
-        <label>岗位类型</label>
-        <input id="jobType" value="后端开发" />
-        <label>难度</label>
-        <select id="difficulty">
+        <label class="hidden">岗位类型</label>
+        <input id="jobType" class="hidden" value="后端开发" />
+        <label>题库分类</label>
+        <select id="questionCategory">
+          <option value="">全部题库</option>
+        </select>
+        <label class="hidden">难度</label>
+        <select id="difficulty" class="hidden">
           <option value="基础">基础</option>
           <option value="进阶" selected>进阶</option>
           <option value="高级">高级</option>
         </select>
-        <label>题目数量</label>
-        <input id="maxQuestions" type="number" min="1" max="50" value="10" />
+        <label class="hidden">题目数量</label>
+        <input id="maxQuestions" class="hidden" type="number" min="1" max="50" value="10" disabled />
         <label><input id="asyncScoring" type="checkbox" checked /> 异步评分（更快）</label>
         <label>面试官人格</label>
         <select id="personality">
@@ -140,38 +177,38 @@
         </div>
 
         <h3 style="margin-top:18px;">语音设置</h3>
-        <label>语音识别方式</label>
-        <select id="sttMode">
+        <label class="hidden">语音识别方式</label>
+        <select id="sttMode" class="hidden">
           <option value="realtime" selected>Realtime(低延迟)</option>
           <option value="server">服务端转写</option>
           <option value="browser">浏览器</option>
         </select>
-        <div id="realtimeModelRow">
-          <label>Realtime 模型</label>
-          <select id="realtimeModel">
+        <div id="realtimeModelRow" class="hidden">
+          <label class="hidden">Realtime 模型</label>
+          <select id="realtimeModel" class="hidden">
             <option value="gpt-realtime-mini-2025-12-15" selected>gpt-realtime-mini-2025-12-15</option>
           </select>
         </div>
-        <div id="sttModelRow">
-          <label>转写模型</label>
-          <select id="sttModel">
+        <div id="sttModelRow" class="hidden">
+          <label class="hidden">转写模型</label>
+          <select id="sttModel" class="hidden">
             <option value="gpt-4o-mini-transcribe" selected>gpt-4o-mini-transcribe</option>
             <option value="whisper-1">whisper-1</option>
           </select>
         </div>
-        <label>麦克风设备</label>
-        <select id="micDevice">
+        <label class="hidden">麦克风设备</label>
+        <select id="micDevice" class="hidden">
           <option value="">系统默认</option>
         </select>
-        <button id="refreshMics" class="btn-secondary" type="button">刷新麦克风列表</button>
-        <label>朗读方式</label>
-        <select id="ttsMode">
+        <button id="refreshMics" class="btn-secondary hidden" type="button">刷新麦克风列表</button>
+        <label class="hidden">朗读方式</label>
+        <select id="ttsMode" class="hidden">
           <option value="browser">浏览器</option>
           <option value="server" selected>服务端(TTS)</option>
         </select>
-        <label><input id="ttsEnabled" type="checkbox" checked /> 启用朗读</label>
-        <label>TTS 模型</label>
-        <select id="ttsModel">
+        <label class="hidden"><input id="ttsEnabled" type="checkbox" checked /> 启用朗读</label>
+        <label class="hidden">TTS 模型</label>
+        <select id="ttsModel" class="hidden">
           <option value="gpt-4o-mini-tts-2025-12-15" selected>gpt-4o-mini-tts-2025-12-15</option>
           <option value="gpt-4o-mini-tts">gpt-4o-mini-tts</option>
           <option value="tts-1">tts-1</option>
@@ -193,13 +230,13 @@
           <option value="marin">marin</option>
           <option value="cedar">cedar</option>
         </select>
-        <label>格式</label>
-        <select id="ttsFormat">
+        <label class="hidden">格式</label>
+        <select id="ttsFormat" class="hidden">
           <option value="mp3" selected>mp3</option>
           <option value="wav">wav</option>
         </select>
-        <label>语速 (0.5~2.0)</label>
-        <input id="ttsSpeed" type="number" step="0.1" min="0.5" max="2.0" value="1.0" />
+        <label class="hidden">语速 (0.5~2.0)</label>
+        <input id="ttsSpeed" class="hidden" type="number" step="0.1" min="0.5" max="2.0" value="1.0" />
 
         <div class="status" id="status">未开始</div>
       </section>
@@ -211,13 +248,12 @@
           <span class="tag" id="followupTag">主问题</span>
         </div>
         <div class="question-box" id="questionBox">点击“开始面试”后，这里会出现问题。</div>
-        <label>你的回答</label>
-        <textarea id="answerInput" placeholder="可以语音或手动输入"></textarea>
+        <label id="answerLabel" class="hidden">你的回答</label>
+        <textarea id="answerInput" class="hidden" placeholder="可以语音或手动输入"></textarea>
         <div class="btn-row">
           <button id="micBtn" class="btn-secondary">开始录音</button>
           <button id="playAudioBtn" class="btn-secondary">播放语音</button>
-          <button id="submitBtn" class="btn-primary">提交答案</button>
-          <button id="skipBtn" class="btn-secondary">跳过 / 下一题</button>
+          <button id="manualInputBtn" class="btn-secondary">手动输入</button>
           <button id="nextBtn" class="btn-secondary">下一题</button>
         </div>
         <audio id="audioPlayer"></audio>
@@ -234,7 +270,22 @@
         </div>
         <label>日志</label>
         <div class="log" id="log"></div>
+        <h3 style="margin-top:18px;">测评清单</h3>
+        <div class="log" id="reportList">暂无</div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button id="viewReportBtn" class="btn-secondary" disabled>查看测评</button>
+        </div>
       </section>
+    </div>
+
+    <div id="reportModal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>测评详情</h3>
+          <button id="closeReportBtn" class="modal-close" type="button">关闭</button>
+        </div>
+        <div class="log" id="reportModalContent">暂无</div>
+      </div>
     </div>
 
     <script>
@@ -245,26 +296,32 @@
         questionNum: 0,
         isFollowup: false,
         lastAudioUrl: null,
-        ttsQueue: Promise.resolve()
+        ttsQueue: Promise.resolve(),
+        manualInputVisible: false,
+        pendingFirstQuestion: null,
+        maxQuestions: 10,
+        reportDetails: []
       };
 
       const els = {
         jobType: document.getElementById("jobType"),
+        questionCategory: document.getElementById("questionCategory"),
         difficulty: document.getElementById("difficulty"),
         maxQuestions: document.getElementById("maxQuestions"),
         personality: document.getElementById("personality"),
         startBtn: document.getElementById("startBtn"),
         endBtn: document.getElementById("endBtn"),
         micBtn: document.getElementById("micBtn"),
-        submitBtn: document.getElementById("submitBtn"),
         playAudioBtn: document.getElementById("playAudioBtn"),
-        skipBtn: document.getElementById("skipBtn"),
+        manualInputBtn: document.getElementById("manualInputBtn"),
         nextBtn: document.getElementById("nextBtn"),
         questionBox: document.getElementById("questionBox"),
         answerInput: document.getElementById("answerInput"),
+        answerLabel: document.getElementById("answerLabel"),
         evaluation: document.getElementById("evaluation"),
         status: document.getElementById("status"),
         log: document.getElementById("log"),
+        reportList: document.getElementById("reportList"),
         sessionTag: document.getElementById("sessionTag"),
         questionTag: document.getElementById("questionTag"),
         followupTag: document.getElementById("followupTag"),
@@ -282,15 +339,45 @@
         ttsModel: document.getElementById("ttsModel"),
         ttsVoice: document.getElementById("ttsVoice"),
         ttsFormat: document.getElementById("ttsFormat"),
-        ttsSpeed: document.getElementById("ttsSpeed")
+        ttsSpeed: document.getElementById("ttsSpeed"),
+        viewReportBtn: document.getElementById("viewReportBtn"),
+        reportModal: document.getElementById("reportModal"),
+        reportModalContent: document.getElementById("reportModalContent"),
+        closeReportBtn: document.getElementById("closeReportBtn")
       };
 
       function setStatus(text) {
         els.status.textContent = text;
       }
 
+      function setReportButtonState(enabled, label) {
+        if (!els.viewReportBtn) return;
+        els.viewReportBtn.disabled = !enabled;
+        if (label) {
+          els.viewReportBtn.textContent = label;
+        } else {
+          els.viewReportBtn.textContent = enabled ? "查看测评" : "生成中...";
+        }
+      }
+
       function log(text) {
         els.log.textContent = `${new Date().toLocaleTimeString()} ${text}\n` + els.log.textContent;
+      }
+
+      function setManualInputVisible(visible) {
+        state.manualInputVisible = visible;
+        if (els.answerInput) {
+          els.answerInput.classList.toggle("hidden", !visible);
+        }
+        if (els.answerLabel) {
+          els.answerLabel.classList.toggle("hidden", !visible);
+        }
+        if (els.manualInputBtn) {
+          els.manualInputBtn.textContent = visible ? "关闭手动输入" : "手动输入";
+        }
+        if (visible && els.answerInput) {
+          els.answerInput.focus();
+        }
       }
 
       async function apiFetch(path, options = {}) {
@@ -317,6 +404,27 @@
           });
         } catch (err) {
           log(`人格加载失败: ${err.message}`);
+        }
+      }
+
+      async function loadCategories() {
+        if (!els.questionCategory) return;
+        try {
+          const res = await apiFetch("/question-categories");
+          const data = await res.json();
+          els.questionCategory.innerHTML = "";
+          const allOption = document.createElement("option");
+          allOption.value = "";
+          allOption.textContent = "全部题库";
+          els.questionCategory.appendChild(allOption);
+          data.forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.key;
+            option.textContent = item.name;
+            els.questionCategory.appendChild(option);
+          });
+        } catch (err) {
+          log(`题库分类加载失败: ${err.message}`);
         }
       }
 
@@ -459,6 +567,19 @@
         return state.ttsQueue;
       }
 
+      function updateNextButtonLabel() {
+        if (!els.nextBtn) return;
+        if (state.pendingFirstQuestion) {
+          els.nextBtn.textContent = "开始面试";
+          return;
+        }
+        if (state.questionNum >= state.maxQuestions) {
+          els.nextBtn.textContent = "结束面试";
+          return;
+        }
+        els.nextBtn.textContent = "下一题";
+      }
+
       function showQuestion(text) {
         els.questionBox.textContent = text || "暂无问题";
         state.questionNum += 1;
@@ -467,7 +588,9 @@
         speechBuffer = "";
         speechInterim = "";
         els.answerInput.value = "";
+        setManualInputVisible(false);
         speak(text);
+        updateNextButtonLabel();
       }
 
       function showEvaluation(result) {
@@ -480,6 +603,36 @@
           <div class="metric"><span>深度广度</span><span>${evalData.depth_breadth.toFixed(1)}</span></div>
           <div class="metric"><span>关键词覆盖</span><span>${(evalData.keyword_coverage * 100).toFixed(0)}%</span></div>
         `;
+      }
+
+      function formatReportDetails(details) {
+        if (!details || !details.length) {
+          return "";
+        }
+        const lines = details.map((item, idx) => {
+          const score = typeof item.total_score === "number" ? item.total_score.toFixed(1) : "-";
+          const weaknesses = (item.weaknesses || []).join("；") || "无";
+          const suggestions = (item.suggestions || []).join("；") || "无";
+          return [
+            `Q${idx + 1} ${item.question || ""}`.trim(),
+            `你的回答: ${item.user_answer || "（无）"}`,
+            `评分: ${score}`,
+            `LLM答案: ${item.llm_answer || "（无）"}`,
+            `不足: ${weaknesses}`,
+            `建议: ${suggestions}`
+          ].join("\n");
+        });
+        return lines.join("\n\n");
+      }
+
+      function renderReportDetails(details) {
+        const text = formatReportDetails(details);
+        if (els.reportList) {
+          els.reportList.textContent = text || "暂无";
+        }
+        if (els.reportModalContent) {
+          els.reportModalContent.textContent = text || "暂无";
+        }
       }
 
       async function pollEvaluation(questionId, attempt = 0) {
@@ -508,10 +661,11 @@
           setStatus("正在创建会话...");
           log("创建会话中...");
           const payload = {
-            job_type: els.jobType.value.trim() || "后端开发",
-            difficulty: els.difficulty.value,
-            max_questions: parseInt(els.maxQuestions.value || "10", 10),
-            personality_name: els.personality.value || null
+            job_type: "通用",
+            difficulty: els.difficulty ? els.difficulty.value : "进阶",
+            max_questions: 10,
+            personality_name: els.personality.value || null,
+            question_category: els.questionCategory ? (els.questionCategory.value || null) : null
           };
           const res = await apiFetch("/sessions", {
             method: "POST",
@@ -521,17 +675,23 @@
           state.sessionId = session.session_id;
           state.questionNum = 0;
           state.isFollowup = false;
+          state.pendingFirstQuestion = null;
+          state.maxQuestions = session.max_questions || 10;
+          state.reportDetails = [];
           els.sessionTag.textContent = `会话 ${state.sessionId.slice(0, 8)}`;
+          renderReportDetails([]);
+          setReportButtonState(false, "查看测评");
 
           setStatus("正在启动面试...");
           const startRes = await apiFetch(`/sessions/${state.sessionId}/start`, { method: "POST" });
           const startData = await startRes.json();
           els.questionBox.textContent = startData.opening;
           log(`开场白: ${startData.opening}`);
-          speak(startData.opening);
-          showQuestion(startData.first_question);
-          log(`首题: ${startData.first_question}`);
-          setStatus("面试进行中");
+          state.pendingFirstQuestion = startData.first_question;
+          updateNextButtonLabel();
+          log(`首题待开始: ${startData.first_question}`);
+          setStatus("等待开始面试");
+          await speak(startData.opening);
         } catch (err) {
           setStatus("启动失败");
           log(`启动失败: ${err.message}`);
@@ -539,9 +699,17 @@
       }
 
       async function submitAnswer() {
+        if (state.pendingFirstQuestion) {
+          const firstQuestion = state.pendingFirstQuestion;
+          state.pendingFirstQuestion = null;
+          showQuestion(firstQuestion);
+          log(`开始面试: ${firstQuestion}`);
+          setStatus("面试进行中");
+          return;
+        }
         const answer = els.answerInput.value.trim();
         if (!answer) {
-          log("回答为空，未提交");
+          log("回答为空，请先作答或使用手动输入");
           return;
         }
         if (!state.sessionId) {
@@ -638,25 +806,39 @@
         if (!state.sessionId) return;
         try {
           setStatus("生成报告中...");
+          setReportButtonState(false, "生成中...");
           const res = await apiFetch(`/sessions/${state.sessionId}/end`, { method: "POST" });
           const report = await res.json();
-          log(`报告生成完成，总分 ${report.overall_score.toFixed(1)}`);
+          state.reportDetails = report.details || [];
+          renderReportDetails(state.reportDetails);
+          setReportButtonState(true, "查看测评");
           setStatus("面试结束");
           state.sessionId = null;
           state.questionNum = 0;
           state.isFollowup = false;
+          state.pendingFirstQuestion = null;
           els.sessionTag.textContent = "会话已结束";
           els.questionTag.textContent = "题目 0";
           els.followupTag.textContent = "主问题";
+          els.questionBox.textContent = "面试结束，报告已生成";
+          if (els.reportList) {
+            els.reportList.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+          updateNextButtonLabel();
         } catch (err) {
           log(`结束失败: ${err.message}`);
+          setReportButtonState(false, "查看测评");
         }
       }
 
       function handleSpeech(text) {
         const normalized = text.replace(/\s/g, "").toLowerCase();
-        if (normalized.includes("下一题") || normalized.includes("跳过") || normalized.includes("skip")) {
-          nextQuestion();
+        if (normalized.includes("开始面试")) {
+          submitAnswer();
+          return;
+        }
+        if (normalized.includes("下一题")) {
+          submitAnswer();
           return;
         }
         if (normalized.includes("结束")) {
@@ -840,7 +1022,6 @@
           }
           const blob = new Blob(recordingChunks, { type: mediaRecorder?.mimeType || "audio/webm" });
           recordingChunks = [];
-          const shouldSubmit = autoSubmitPending;
           autoSubmitPending = false;
           resetRecordingState();
           try {
@@ -856,9 +1037,7 @@
             } else {
               log("语音识别为空，请重试或切换浏览器识别");
             }
-            if (shouldSubmit) {
-              submitAnswer();
-            }
+            log("录音结束，可点击下一题提交");
           } catch (err) {
             if (err && err.name === "AbortError") {
               log("语音识别超时，请重试或切换浏览器识别");
@@ -884,7 +1063,7 @@
 
       function stopServerRecording(shouldSubmit) {
         if (!recordingActive || !mediaRecorder) return;
-        autoSubmitPending = Boolean(shouldSubmit);
+        autoSubmitPending = false;
         recordingActive = false;
         setMicLabel();
         if (recordingStopTimer) {
@@ -1048,22 +1227,19 @@
           if (data.type === "transcript") {
             const text = (data.text || "").trim();
             if (!text) return;
-            if (data.final) {
-              log(`语音识别: ${text}`);
-              if (isCommandOnly(text)) {
-                handleSpeech(text);
-              } else {
-                appendTranscript(text);
-                speechInterim = "";
-                updateAnswerInput();
-              }
-              if (autoSubmitPending) {
-                autoSubmitPending = false;
-                submitAnswer();
-              }
-              if (realtimeClosing) {
-                cleanupRealtime();
-              }
+              if (data.final) {
+                log(`语音识别: ${text}`);
+                if (isCommandOnly(text)) {
+                  handleSpeech(text);
+                } else {
+                  appendTranscript(text);
+                  speechInterim = "";
+                  updateAnswerInput();
+                }
+                log("录音结束，可点击下一题提交");
+                if (realtimeClosing) {
+                  cleanupRealtime();
+                }
             } else {
               speechInterim = text;
               updateAnswerInput();
@@ -1091,7 +1267,7 @@
 
       function stopRealtimeRecording(shouldSubmit) {
         if (!realtimeWs) return;
-        autoSubmitPending = Boolean(shouldSubmit);
+        autoSubmitPending = false;
         realtimeClosing = true;
         realtimeActive = false;
         setMicLabel();
@@ -1134,7 +1310,7 @@
         if (!recognition) return;
         dictationActive = false;
         stopRequested = true;
-        autoSubmitPending = Boolean(shouldSubmit);
+        autoSubmitPending = false;
         setMicLabel();
         recognition.stop();
       }
@@ -1177,9 +1353,8 @@
         recognition.onend = () => {
           isRecognizing = false;
           setMicEnabled(true);
-          if (autoSubmitPending) {
-            autoSubmitPending = false;
-            submitAnswer();
+          if (stopRequested) {
+            log("录音结束，可点击下一题提交");
           }
           if (dictationActive && !stopRequested) {
             if (els.audio && !els.audio.paused) {
@@ -1257,17 +1432,45 @@
       }
 
       els.startBtn.addEventListener("click", startInterview);
-      els.submitBtn.addEventListener("click", submitAnswer);
-      els.nextBtn.addEventListener("click", nextQuestion);
-      els.skipBtn.addEventListener("click", nextQuestion);
+      els.nextBtn.addEventListener("click", submitAnswer);
       els.endBtn.addEventListener("click", endInterview);
+      if (els.manualInputBtn) {
+        els.manualInputBtn.addEventListener("click", () => {
+          setManualInputVisible(!state.manualInputVisible);
+        });
+      }
+      if (els.viewReportBtn) {
+        els.viewReportBtn.addEventListener("click", () => {
+          if (!state.reportDetails || state.reportDetails.length === 0) {
+            return;
+          }
+          renderReportDetails(state.reportDetails);
+          if (els.reportModal) {
+            els.reportModal.classList.remove("hidden");
+          }
+        });
+      }
+      if (els.closeReportBtn) {
+        els.closeReportBtn.addEventListener("click", () => {
+          if (els.reportModal) {
+            els.reportModal.classList.add("hidden");
+          }
+        });
+      }
+      if (els.reportModal) {
+        els.reportModal.addEventListener("click", (event) => {
+          if (event.target === els.reportModal) {
+            els.reportModal.classList.add("hidden");
+          }
+        });
+      }
       els.micBtn.addEventListener("click", () => {
         if (els.audio && !els.audio.paused) {
           els.audio.pause();
         }
         if (getSttMode() === "realtime") {
           if (realtimeActive) {
-            stopRealtimeRecording(true);
+            stopRealtimeRecording(false);
             return;
           }
           startRealtimeRecording();
@@ -1275,7 +1478,7 @@
         }
         if (getSttMode() === "server") {
           if (recordingActive) {
-            stopServerRecording(true);
+            stopServerRecording(false);
             return;
           }
           startServerRecording();
@@ -1283,7 +1486,7 @@
         }
         if (!recognition) return;
         if (dictationActive || isRecognizing) {
-          stopDictation(true);
+          stopDictation(false);
           return;
         }
         if (navigator.mediaDevices && !micReady) {
@@ -1348,6 +1551,7 @@
       });
 
       loadPersonalities();
+      loadCategories();
       initSpeech();
       bindAudioEvents();
       setMicLabel();

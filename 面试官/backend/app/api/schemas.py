@@ -13,8 +13,9 @@ class CreateSessionRequest(BaseModel):
     """创建会话请求"""
     job_type: str = Field(..., description="岗位类型", example="后端开发")
     difficulty: str = Field(..., description="难度级别: 基础/进阶/高级 或 easy/medium/hard", example="进阶")
-    max_questions: int = Field(20, ge=1, le=50, description="最大题目数")
+    max_questions: int = Field(10, ge=1, le=50, description="最大题目数")
     personality_name: Optional[str] = Field(None, description="指定人格名称，不指定则随机")
+    question_category: Optional[str] = Field(None, description="????", example="LLM")
 
 
 class SubmitAnswerRequest(BaseModel):
@@ -40,6 +41,7 @@ class SessionResponse(BaseModel):
     personality: str
     job_type: str
     difficulty: str
+    question_category: Optional[str]
     questions_answered: int
     max_questions: int
     start_time: Optional[str]
@@ -98,6 +100,19 @@ class NextQuestionResponse(BaseModel):
     max_questions: int
 
 
+
+class ReportDetailItem(BaseModel):
+    """Report detail item"""
+    question: str
+    user_answer: str
+    total_score: float
+    technical_accuracy: float
+    clarity: float
+    depth_breadth: float
+    weaknesses: List[str]
+    suggestions: List[str]
+    llm_answer: str
+
 class InterviewReportResponse(BaseModel):
     """面试报告响应"""
     session_id: str
@@ -109,6 +124,7 @@ class InterviewReportResponse(BaseModel):
     weak_areas: List[str]
     strong_areas: List[str]
     suggestions: List[str]
+    details: Optional[List[ReportDetailItem]] = None
 
 
 class PersonalityInfo(BaseModel):
@@ -137,3 +153,9 @@ class ErrorResponse(BaseModel):
     """错误响应"""
     error: str
     detail: Optional[str] = None
+
+class QuestionCategoryInfo(BaseModel):
+    """??????"""
+    key: str
+    name: str
+    count: int

@@ -105,6 +105,7 @@ def build_evaluation_prompt(
     user_answer: str
 ) -> str:
     """构建评估 Prompt"""
+    reference_answer = (reference_answer or "").strip() or "????????????"
     return EVALUATION_PROMPT_TEMPLATE.format(
         job_type=job_type,
         question_type=question_type,

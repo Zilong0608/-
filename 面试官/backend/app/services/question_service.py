@@ -38,6 +38,19 @@ class JsonQuestionRepository:
 
         self.question_pool: List[Question] = []
         self._all_questions: List[Question] = []
+        self._all_questions_by_category: Dict[str, List[Question]] = {}
+        self._current_category: Optional[str] = None
+        self._category_display_map = {
+            "LLM": "LLM大模型",
+            "Oracle": "Oracle数据库",
+            "SLAM": "SLAM定位/视觉",
+            "Web3": "Web3区块链",
+            "数据库": "数据库基础",
+            "测试": "测试开发",
+            "算法": "算法与图形",
+            "网安": "网络安全",
+            "其他": "综合题目"
+        }
 
         self._load_questions()
 
@@ -55,10 +68,34 @@ class JsonQuestionRepository:
     def _parse_questions(self, data: Any) -> List[Question]:
         questions: List[Question] = []
 
-        if isinstance(data, dict):
-            items = data.get("questions") or data.get("items") or []
+        categories = data.get("categories") if isinstance(data, dict) else None
+        if isinstance(categories, dict):
+            for category_key, payload in categories.items():
+                items = payload.get("questions", []) if isinstance(payload, dict) else []
+                parsed = self._parse_question_items(items, category_key)
+                if parsed:
+                    self._all_questions_by_category[category_key] = parsed
+                    questions.extend(parsed)
         else:
-            items = data if isinstance(data, list) else []
+            items = data.get("questions") or data.get("items") if isinstance(data, dict) else data
+            parsed = self._parse_question_items(items or [], None)
+            questions.extend(parsed)
+
+        # 全量去重（避免混合题库时重复）
+        seen = set()
+        unique_questions = []
+        for q in questions:
+            if q.content in seen:
+                continue
+            seen.add(q.content)
+            unique_questions.append(q)
+
+        return unique_questions
+
+    def _parse_question_items(self, items: List[Any], category_key: Optional[str]) -> List[Question]:
+        questions: List[Question] = []
+        seen = set()
+        display_category = self._get_display_category(category_key)
 
         for idx, item in enumerate(items, start=1):
             question_text = ""
@@ -69,18 +106,24 @@ class JsonQuestionRepository:
 
             if isinstance(item, str):
                 question_text = item.strip()
-                qid = f"json_{idx:06d}"
+                qid = f"json_{category_key or 'all'}_{idx:06d}"
             elif isinstance(item, dict):
                 question_text = (item.get("question") or item.get("content") or "").strip()
                 answer_text = (item.get("answer") or "").strip()
-                qid = item.get("chunk_id") or item.get("question_id") or f"json_{idx:06d}"
+                qid = item.get("chunk_id") or item.get("question_id") or f"json_{category_key or 'all'}_{idx:06d}"
                 source_file = item.get("source_file") or item.get("metadata", {}).get("source_file", "")
                 metadata = item.get("metadata") or {}
 
             if not question_text:
                 continue
+            if question_text in seen:
+                continue
+            seen.add(question_text)
 
-            job_category = self._infer_job_category(source_file)
+            if category_key:
+                metadata = {**metadata, "category_key": category_key, "category_name": display_category}
+
+            job_category = display_category or self._infer_job_category(source_file)
 
             questions.append(Question(
                 question_id=str(qid),
@@ -93,26 +136,38 @@ class JsonQuestionRepository:
                 metadata=metadata
             ))
 
-        seen = set()
-        unique_questions = []
-        for q in questions:
-            if q.content in seen:
-                continue
-            seen.add(q.content)
-            unique_questions.append(q)
+        return questions
 
-        return unique_questions
+    def list_categories(self) -> List[Dict[str, Any]]:
+        categories = []
+        for key, items in sorted(self._all_questions_by_category.items()):
+            categories.append({
+                "key": key,
+                "name": self._get_display_category(key) or key,
+                "count": len(items)
+            })
+        return categories
+
+    def _get_display_category(self, key: Optional[str]) -> str:
+        if not key:
+            return ""
+        return self._category_display_map.get(key, key)
 
     def preload_questions(
         self,
         job_type: Optional[str] = None,
         difficulty: Optional[DifficultyLevel] = None,
-        question_type: Optional[QuestionType] = None
+        question_type: Optional[QuestionType] = None,
+        question_category: Optional[str] = None
     ) -> List[Question]:
         if not self._all_questions:
             raise QuestionPoolEmptyException("No questions loaded from JSON")
 
-        questions = list(self._all_questions)
+        self._current_category = question_category
+        if question_category:
+            questions = list(self._all_questions_by_category.get(question_category, []))
+        else:
+            questions = list(self._all_questions)
         random.shuffle(questions)
         self.question_pool = questions[:self.preload_count]
         return self.question_pool
@@ -121,7 +176,8 @@ class JsonQuestionRepository:
         self,
         exclude_ids: Optional[List[str]] = None,
         job_type: Optional[str] = None,
-        difficulty: Optional[DifficultyLevel] = None
+        difficulty: Optional[DifficultyLevel] = None,
+        question_category: Optional[str] = None
     ) -> Optional[Question]:
         exclude_ids = exclude_ids or []
         available = [q for q in self.question_pool if q.question_id not in exclude_ids]
@@ -136,7 +192,10 @@ class JsonQuestionRepository:
         return random.choice(available)
 
     def _refill_question_pool(self, exclude_ids: List[str]):
-        questions = [q for q in self._all_questions if q.question_id not in exclude_ids]
+        source = self._all_questions
+        if self._current_category:
+            source = self._all_questions_by_category.get(self._current_category, [])
+        questions = [q for q in source if q.question_id not in exclude_ids]
         random.shuffle(questions)
         self.question_pool.extend(questions[: self.preload_count])
 
@@ -261,7 +320,8 @@ class QuestionRepository:
         self,
         job_type: Optional[str] = None,
         difficulty: Optional[DifficultyLevel] = None,
-        question_type: Optional[QuestionType] = None
+        question_type: Optional[QuestionType] = None,
+        question_category: Optional[str] = None
     ) -> List[Question]:
         """
         预加载问题池
@@ -348,7 +408,8 @@ class QuestionRepository:
         self,
         exclude_ids: Optional[List[str]] = None,
         job_type: Optional[str] = None,
-        difficulty: Optional[DifficultyLevel] = None
+        difficulty: Optional[DifficultyLevel] = None,
+        question_category: Optional[str] = None
     ) -> Optional[Question]:
         """
         获取下一个问题
@@ -394,7 +455,8 @@ class QuestionRepository:
         self,
         exclude_ids: List[str],
         job_type: Optional[str] = None,
-        difficulty: Optional[DifficultyLevel] = None
+        difficulty: Optional[DifficultyLevel] = None,
+        question_category: Optional[str] = None
     ):
         """
         补充问题池

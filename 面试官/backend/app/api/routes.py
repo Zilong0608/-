@@ -19,7 +19,7 @@ from fastapi import (
     WebSocketDisconnect
 )
 from fastapi.responses import Response
-from typing import List, Optional
+from typing import List, Optional, Dict
 import websockets
 
 from .schemas import (
@@ -27,7 +27,8 @@ from .schemas import (
     SubmitAnswerRequest, SubmitAnswerResponse, NextQuestionResponse,
     InterviewReportResponse, PersonalityInfo, StatisticsResponse,
     HealthResponse, ErrorResponse, EvaluationResponse, TTSRequest,
-    AsyncAnswerResponse, EvaluationLookupResponse, STTResponse
+    AsyncAnswerResponse, EvaluationLookupResponse, STTResponse,
+    QuestionCategoryInfo
 )
 from ..core.interview_engine import InterviewEngine
 from ..models import DifficultyLevel
@@ -61,6 +62,40 @@ def get_engine() -> InterviewEngine:
             detail="Interview engine not initialized"
         )
     return _engine
+
+def _build_report_details(engine: InterviewEngine, session_id: str, job_type: str) -> List[Dict]:
+    records = engine.data_service.get_answer_records(session_id)
+    evaluations = engine.data_service.get_evaluations(session_id)
+    eval_map = {e.get("question_id"): e for e in evaluations}
+
+    details: List[Dict] = []
+    for record in records:
+        if record.get("is_followup"):
+            continue
+        question = (record.get("question_content") or "").strip()
+        user_answer = (record.get("user_answer") or "").strip()
+        eval_data = eval_map.get(record.get("question_id"), {})
+        llm_answer = (record.get("reference_answer") or "").strip()
+        if not llm_answer and question:
+            try:
+                llm_answer = engine.ai_service.generate_reference_answer(question, job_type=job_type)
+            except Exception:
+                llm_answer = "????????"
+
+        details.append({
+            "question": question,
+            "user_answer": user_answer,
+            "total_score": float(eval_data.get("total_score", 0.0)),
+            "technical_accuracy": float(eval_data.get("technical_accuracy", 0.0)),
+            "clarity": float(eval_data.get("clarity", 0.0)),
+            "depth_breadth": float(eval_data.get("depth_breadth", 0.0)),
+            "weaknesses": eval_data.get("weaknesses", []),
+            "suggestions": eval_data.get("suggestions", []),
+            "llm_answer": llm_answer
+        })
+
+    return details
+
 
 
 # ============ 会话管理 ============
@@ -99,7 +134,8 @@ async def create_session(request: CreateSessionRequest):
             job_type=request.job_type,
             difficulty=difficulty,
             max_questions=request.max_questions,
-            personality_name=request.personality_name
+            personality_name=request.personality_name,
+            question_category=request.question_category
         )
 
         # 返回会话信息
@@ -111,6 +147,7 @@ async def create_session(request: CreateSessionRequest):
             personality=status_info['personality'],
             job_type=status_info['job_type'],
             difficulty=status_info['difficulty'],
+            question_category=status_info.get('question_category'),
             questions_answered=status_info['questions_answered'],
             max_questions=status_info['max_questions'],
             start_time=status_info['start_time'],
@@ -184,6 +221,7 @@ async def get_session_status(session_id: str):
             personality=status_info['personality'],
             job_type=status_info['job_type'],
             difficulty=status_info['difficulty'],
+            question_category=status_info.get('question_category'),
             questions_answered=status_info['questions_answered'],
             max_questions=status_info['max_questions'],
             start_time=status_info['start_time'],
@@ -404,6 +442,7 @@ async def end_interview(session_id: str):
     try:
         engine = get_engine()
         report = engine.end_interview(session_id)
+        details = _build_report_details(engine, session_id, report.job_type)
 
         return InterviewReportResponse(
             session_id=session_id,
@@ -414,7 +453,8 @@ async def end_interview(session_id: str):
             correct_rate=report.correct_rate,
             weak_areas=report.weak_areas,
             strong_areas=report.strong_areas,
-            suggestions=report.suggestions
+            suggestions=report.suggestions,
+            details=details
         )
 
     except SessionNotFoundException as e:
@@ -496,6 +536,27 @@ async def list_personalities():
             detail="Failed to list personalities"
         )
 
+
+
+@router.get("/question-categories", response_model=List[QuestionCategoryInfo])
+async def list_question_categories():
+    """
+    ??????????????????
+    """
+    try:
+        engine = get_engine()
+        repo = engine.question_repo
+        if hasattr(repo, "list_categories"):
+            categories = repo.list_categories()
+            return [QuestionCategoryInfo(**item) for item in categories]
+        return []
+
+    except Exception as e:
+        logger.error(f"Failed to list question categories: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list question categories"
+        )
 
 @router.get("/statistics", response_model=StatisticsResponse)
 async def get_statistics():

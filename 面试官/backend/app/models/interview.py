@@ -31,6 +31,7 @@ class InterviewConfig:
     difficulty: DifficultyLevel         # 难度等级
     duration_minutes: int               # 面试时长（分钟）
     personality_name: Optional[str] = None  # 指定人格（None=随机）
+    question_category: Optional[str] = None  # ???????????????None=?????????
     max_questions: int = 15             # 最多题目数
     enable_followup: bool = True        # 是否启用追问
 
@@ -41,6 +42,7 @@ class InterviewConfig:
             "difficulty": self.difficulty.value if isinstance(self.difficulty, Enum) else self.difficulty,
             "duration_minutes": self.duration_minutes,
             "personality_name": self.personality_name,
+            "question_category": self.question_category,
             "max_questions": self.max_questions,
             "enable_followup": self.enable_followup
         }
@@ -53,6 +55,7 @@ class InterviewConfig:
             difficulty=DifficultyLevel(data["difficulty"]) if isinstance(data["difficulty"], str) else data["difficulty"],
             duration_minutes=data["duration_minutes"],
             personality_name=data.get("personality_name"),
+            question_category=data.get("question_category"),
             max_questions=data.get("max_questions", 15),
             enable_followup=data.get("enable_followup", True)
         )

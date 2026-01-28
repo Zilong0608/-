@@ -68,6 +68,7 @@ class InterviewEngine:
         difficulty: DifficultyLevel,
         max_questions: int = 20,
         personality_name: Optional[str] = None,
+        question_category: Optional[str] = None,
         duration_minutes: int = 30
     ) -> InterviewSession:
         """
@@ -114,6 +115,8 @@ class InterviewEngine:
             job_type=job_type,
             difficulty=difficulty,
             duration_minutes=duration_minutes,
+            personality_name=personality_name,
+            question_category=question_category,
             max_questions=max_questions
         )
 
@@ -176,7 +179,8 @@ class InterviewEngine:
         try:
             session.preloaded_questions = self.question_repo.preload_questions(
                 job_type=session.config.job_type,
-                difficulty=session.config.difficulty
+                difficulty=session.config.difficulty,
+                question_category=session.config.question_category
             )
         except QuestionPoolEmptyException as e:
             session.status = InterviewStatus.IDLE
@@ -647,6 +651,7 @@ class InterviewEngine:
             "personality": session.personality.name,
             "job_type": session.config.job_type,
             "difficulty": session.config.difficulty.value,
+            "question_category": session.config.question_category,
             "questions_answered": main_questions_answered,
             "max_questions": session.config.max_questions,
             "is_answering_followup": session.is_answering_followup,
@@ -707,7 +712,8 @@ class InterviewEngine:
         return self.question_repo.get_next_question(
             exclude_ids=asked_ids,
             job_type=session.config.job_type,
-            difficulty=session.config.difficulty
+            difficulty=session.config.difficulty,
+            question_category=session.config.question_category
         )
 
     def _build_answer_details(

@@ -45,6 +45,13 @@ class AIService:
 
         logger.info(f"AIService initialized with model: {model}")
 
+    def _is_gpt5(self, model: Optional[str] = None) -> bool:
+        name = (model or self.model or "").lower()
+        return name.startswith("gpt-5")
+
+    def _supports_temperature(self, model: Optional[str] = None) -> bool:
+        return not self._is_gpt5(model)
+
     def evaluate_answer(
         self,
         prompt: str,
@@ -66,14 +73,17 @@ class AIService:
         logger.debug("Calling AI to evaluate answer")
 
         try:
-            response = self._call_with_retry(
-                lambda: self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=temperature,
-                    response_format={"type": "json_object"}
-                )
-            )
+            def _call():
+                payload = {
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "response_format": {"type": "json_object"}
+                }
+                if self._supports_temperature():
+                    payload["temperature"] = temperature
+                return self.client.chat.completions.create(**payload)
+
+            response = self._call_with_retry(_call)
 
             content = response.choices[0].message.content
             result = json.loads(content)
@@ -115,13 +125,16 @@ class AIService:
         logger.debug("Calling AI to generate follow-up question")
 
         try:
-            response = self._call_with_retry(
-                lambda: self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=temperature
-                )
-            )
+            def _call():
+                payload = {
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+                if self._supports_temperature():
+                    payload["temperature"] = temperature
+                return self.client.chat.completions.create(**payload)
+
+            response = self._call_with_retry(_call)
 
             followup = response.choices[0].message.content.strip()
             logger.debug(f"Follow-up question generated: {followup[:50]}...")
@@ -155,14 +168,17 @@ class AIService:
         logger.debug("Calling AI to generate final report")
 
         try:
-            response = self._call_with_retry(
-                lambda: self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=temperature,
-                    response_format={"type": "json_object"}
-                )
-            )
+            def _call():
+                payload = {
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "response_format": {"type": "json_object"}
+                }
+                if self._supports_temperature():
+                    payload["temperature"] = temperature
+                return self.client.chat.completions.create(**payload)
+
+            response = self._call_with_retry(_call)
 
             content = response.choices[0].message.content
             result = json.loads(content)
@@ -180,6 +196,48 @@ class AIService:
             logger.error(f"Failed to generate report: {e}")
             raise AIServiceException(
                 "Failed to generate final report",
+                original_error=e
+            )
+
+    def generate_reference_answer(
+        self,
+        question: str,
+        job_type: str = ""
+    ) -> str:
+        """
+        生成简洁的标准答案（用于报告展示）
+        """
+        if not question:
+            return ""
+
+        prompt = (
+            f"你是资深{job_type or '技术'}面试官。"
+            "请针对下面问题给出简洁标准答案，要求："
+            "3-5条要点、每条不超过20字、总字数<=120。"
+            "只输出答案要点，不要额外解释。\n\n"
+            f"问题：{question}"
+        )
+
+        def _call():
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            if self._supports_temperature():
+                payload["temperature"] = 0.2
+            if self._is_gpt5():
+                payload["max_completion_tokens"] = 200
+            else:
+                payload["max_tokens"] = 200
+            return self.client.chat.completions.create(**payload)
+
+        try:
+            response = self._call_with_retry(_call)
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.error(f"Failed to generate reference answer: {e}")
+            raise AIServiceException(
+                "Failed to generate reference answer",
                 original_error=e
             )
 
@@ -337,11 +395,17 @@ class AIService:
             True if connection successful, False otherwise
         """
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": "Hello"}],
-                max_tokens=5
-            )
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": "Hello"}]
+            }
+            if self._is_gpt5():
+                payload["max_completion_tokens"] = 5
+            else:
+                payload["max_tokens"] = 5
+            if self._supports_temperature():
+                payload["temperature"] = 0.2
+            response = self.client.chat.completions.create(**payload)
             logger.info("AI service connection test successful")
             return True
 

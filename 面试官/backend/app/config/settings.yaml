@@ -13,7 +13,7 @@ rag:
 # AI 服务配置
 ai:
   provider: "openai"
-  model: "gpt-4o"
+  model: "gpt-5.2-2025-12-11"
   max_retries: 3
   timeout: 30
 
