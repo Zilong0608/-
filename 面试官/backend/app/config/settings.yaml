@@ -1,0 +1,71 @@
+app:
+  name: "AI面试官系统"
+  version: "1.0.0"
+  description: "基于RAG的智能面试系统"
+
+# RAG 配置
+rag:
+  collection_name: "interview_qa"
+  preload_count: 100
+  refill_threshold: 20
+  refill_count: 50
+
+# AI 服务配置
+ai:
+  provider: "openai"
+  model: "gpt-4o"
+  max_retries: 3
+  timeout: 30
+
+  # 温度设置
+  temperatures:
+    evaluation: 0.3      # 评估要稳定
+    followup: 0.7        # 追问可以有创意
+    report: 0.5          # 报告适中
+
+# 面试配置
+interview:
+  default_duration: 30
+  max_questions: 20
+  default_difficulty: "进阶"
+
+  # 追问策略
+  followup:
+    enabled: true
+    max_depth: 2
+    score_threshold: [6, 8]  # 6-8分之间触发追问
+
+  # 难度自适应
+  adaptive_difficulty:
+    enabled: true
+    consecutive_threshold: 2
+    upgrade_on: "correct"
+    downgrade_on: "incorrect"
+
+# 人格配置
+personalities:
+  default: "friendly"
+  available:
+    - strict
+    - friendly
+    - pressure
+    - practical
+
+# 岗位类型
+job_types:
+  - "AI大模型"
+  - "算法"
+  - "深度学习"
+  - "数据库"
+  - "HR通用"
+  - "网络安全"
+  - "测试开发"
+  - "机器学习"
+  - "AI算法"
+  - "Web3"
+  - "数据分析"
+
+# 日志配置
+logging:
+  rotation: "1 day"
+  retention: "30 days"

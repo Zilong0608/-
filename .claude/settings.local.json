@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(done)",
+      "Bash(dir:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(python:*)",
+      "Bash(timeout 180 tail:*)",
+      "Bash(ls:*)",
+      "Bash(pip install:*)",
+      "Bash(taskkill //F //FI \"WINDOWTITLE eq 06_build_index.py*\")",
+      "Bash(taskkill //F //FI \"IMAGENAME eq python.exe\" //FI \"COMMANDLINE eq *06_build_index.py*\")",
+      "Bash(tee:*)",
+      "Bash(tesseract:*)",
+      "Bash(pip show:*)",
+      "Bash(timeout /t 15 /nobreak)",
+      "Bash(ping:*)",
+      "Bash(tasklist:*)",
+      "Bash(taskkill:*)",
+      "Bash(findstr:*)"
+    ]
+  }
+}

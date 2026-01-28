@@ -1,0 +1,1367 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI 面试官 - 语音面试</title>
+    <style>
+      :root {
+        --bg: #0f1220;
+        --panel: #171b2e;
+        --panel-2: #1e243b;
+        --text: #f3f5ff;
+        --muted: #a7b0c7;
+        --accent: #5bd0ff;
+        --accent-2: #78ffb7;
+        --danger: #ff6b6b;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: radial-gradient(1200px 600px at 20% -10%, #203a5c 0%, #0f1220 45%, #0f1220 100%);
+        color: var(--text);
+      }
+      header {
+        padding: 20px 28px;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      .layout {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 320px 1fr 320px;
+        padding: 0 20px 20px;
+      }
+      .panel {
+        background: var(--panel);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid #232844;
+        min-height: 120px;
+      }
+      .panel h3 {
+        margin: 0 0 12px;
+        font-size: 16px;
+      }
+      label { display: block; margin: 10px 0 6px; color: var(--muted); font-size: 12px; }
+      input, select, textarea, button {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #2b3456;
+        background: var(--panel-2);
+        color: var(--text);
+        font-size: 14px;
+      }
+      textarea { resize: vertical; min-height: 100px; }
+      button {
+        cursor: pointer;
+        font-weight: 600;
+        transition: transform 0.1s ease, opacity 0.2s ease;
+      }
+      button:hover { transform: translateY(-1px); }
+      .btn-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px; }
+      .btn-primary { background: linear-gradient(135deg, #4aa3ff, #5bd0ff); color: #0f1220; }
+      .btn-secondary { background: #253056; }
+      .btn-danger { background: #3b1e2a; color: #ffb3b3; }
+      .status {
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: #101626;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 10px;
+        min-height: 24px;
+      }
+      .question-box {
+        background: #101626;
+        border-radius: 10px;
+        padding: 16px;
+        min-height: 120px;
+        border: 1px solid #273152;
+        font-size: 16px;
+        line-height: 1.6;
+      }
+      .tag {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #22304b;
+        color: var(--muted);
+        font-size: 12px;
+        margin-right: 6px;
+      }
+      .metric {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin: 6px 0;
+      }
+      .muted { color: var(--muted); }
+      .log {
+        white-space: pre-wrap;
+        font-size: 12px;
+        color: var(--muted);
+        background: #101626;
+        border-radius: 8px;
+        padding: 10px;
+        min-height: 120px;
+      }
+      @media (max-width: 980px) {
+        .layout { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>AI 面试官 - 语音面试</header>
+    <div class="layout">
+      <section class="panel">
+        <h3>面试配置</h3>
+        <label>岗位类型</label>
+        <input id="jobType" value="后端开发" />
+        <label>难度</label>
+        <select id="difficulty">
+          <option value="基础">基础</option>
+          <option value="进阶" selected>进阶</option>
+          <option value="高级">高级</option>
+        </select>
+        <label>题目数量</label>
+        <input id="maxQuestions" type="number" min="1" max="50" value="10" />
+        <label><input id="asyncScoring" type="checkbox" checked /> 异步评分（更快）</label>
+        <label>面试官人格</label>
+        <select id="personality">
+          <option value="">随机</option>
+        </select>
+        <div class="btn-row">
+          <button id="startBtn" class="btn-primary">开始面试</button>
+          <button id="endBtn" class="btn-danger">结束面试</button>
+        </div>
+
+        <h3 style="margin-top:18px;">语音设置</h3>
+        <label>语音识别方式</label>
+        <select id="sttMode">
+          <option value="realtime" selected>Realtime(低延迟)</option>
+          <option value="server">服务端转写</option>
+          <option value="browser">浏览器</option>
+        </select>
+        <div id="realtimeModelRow">
+          <label>Realtime 模型</label>
+          <select id="realtimeModel">
+            <option value="gpt-realtime-mini-2025-12-15" selected>gpt-realtime-mini-2025-12-15</option>
+          </select>
+        </div>
+        <div id="sttModelRow">
+          <label>转写模型</label>
+          <select id="sttModel">
+            <option value="gpt-4o-mini-transcribe" selected>gpt-4o-mini-transcribe</option>
+            <option value="whisper-1">whisper-1</option>
+          </select>
+        </div>
+        <label>麦克风设备</label>
+        <select id="micDevice">
+          <option value="">系统默认</option>
+        </select>
+        <button id="refreshMics" class="btn-secondary" type="button">刷新麦克风列表</button>
+        <label>朗读方式</label>
+        <select id="ttsMode">
+          <option value="browser">浏览器</option>
+          <option value="server" selected>服务端(TTS)</option>
+        </select>
+        <label><input id="ttsEnabled" type="checkbox" checked /> 启用朗读</label>
+        <label>TTS 模型</label>
+        <select id="ttsModel">
+          <option value="gpt-4o-mini-tts-2025-12-15" selected>gpt-4o-mini-tts-2025-12-15</option>
+          <option value="gpt-4o-mini-tts">gpt-4o-mini-tts</option>
+          <option value="tts-1">tts-1</option>
+          <option value="tts-1-hd">tts-1-hd</option>
+        </select>
+        <label>声音</label>
+        <select id="ttsVoice">
+          <option value="alloy" selected>alloy</option>
+          <option value="echo">echo</option>
+          <option value="fable">fable</option>
+          <option value="onyx">onyx</option>
+          <option value="nova">nova</option>
+          <option value="shimmer">shimmer</option>
+          <option value="coral">coral</option>
+          <option value="verse">verse</option>
+          <option value="ballad">ballad</option>
+          <option value="ash">ash</option>
+          <option value="sage">sage</option>
+          <option value="marin">marin</option>
+          <option value="cedar">cedar</option>
+        </select>
+        <label>格式</label>
+        <select id="ttsFormat">
+          <option value="mp3" selected>mp3</option>
+          <option value="wav">wav</option>
+        </select>
+        <label>语速 (0.5~2.0)</label>
+        <input id="ttsSpeed" type="number" step="0.1" min="0.5" max="2.0" value="1.0" />
+
+        <div class="status" id="status">未开始</div>
+      </section>
+
+      <section class="panel">
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+          <span class="tag" id="sessionTag">会话未创建</span>
+          <span class="tag" id="questionTag">题目 0</span>
+          <span class="tag" id="followupTag">主问题</span>
+        </div>
+        <div class="question-box" id="questionBox">点击“开始面试”后，这里会出现问题。</div>
+        <label>你的回答</label>
+        <textarea id="answerInput" placeholder="可以语音或手动输入"></textarea>
+        <div class="btn-row">
+          <button id="micBtn" class="btn-secondary">开始录音</button>
+          <button id="playAudioBtn" class="btn-secondary">播放语音</button>
+          <button id="submitBtn" class="btn-primary">提交答案</button>
+          <button id="skipBtn" class="btn-secondary">跳过 / 下一题</button>
+          <button id="nextBtn" class="btn-secondary">下一题</button>
+        </div>
+        <audio id="audioPlayer"></audio>
+      </section>
+
+      <section class="panel">
+        <h3>评分与反馈</h3>
+        <div id="evaluation">
+          <div class="metric"><span>总分</span><span class="muted">-</span></div>
+          <div class="metric"><span>技术准确性</span><span class="muted">-</span></div>
+          <div class="metric"><span>表达清晰度</span><span class="muted">-</span></div>
+          <div class="metric"><span>深度广度</span><span class="muted">-</span></div>
+          <div class="metric"><span>关键词覆盖</span><span class="muted">-</span></div>
+        </div>
+        <label>日志</label>
+        <div class="log" id="log"></div>
+      </section>
+    </div>
+
+    <script>
+      const apiBase = "/api/v1";
+      const wsBase = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}`;
+      const state = {
+        sessionId: null,
+        questionNum: 0,
+        isFollowup: false,
+        lastAudioUrl: null,
+        ttsQueue: Promise.resolve()
+      };
+
+      const els = {
+        jobType: document.getElementById("jobType"),
+        difficulty: document.getElementById("difficulty"),
+        maxQuestions: document.getElementById("maxQuestions"),
+        personality: document.getElementById("personality"),
+        startBtn: document.getElementById("startBtn"),
+        endBtn: document.getElementById("endBtn"),
+        micBtn: document.getElementById("micBtn"),
+        submitBtn: document.getElementById("submitBtn"),
+        playAudioBtn: document.getElementById("playAudioBtn"),
+        skipBtn: document.getElementById("skipBtn"),
+        nextBtn: document.getElementById("nextBtn"),
+        questionBox: document.getElementById("questionBox"),
+        answerInput: document.getElementById("answerInput"),
+        evaluation: document.getElementById("evaluation"),
+        status: document.getElementById("status"),
+        log: document.getElementById("log"),
+        sessionTag: document.getElementById("sessionTag"),
+        questionTag: document.getElementById("questionTag"),
+        followupTag: document.getElementById("followupTag"),
+        audio: document.getElementById("audioPlayer"),
+        asyncScoring: document.getElementById("asyncScoring"),
+        sttMode: document.getElementById("sttMode"),
+        sttModel: document.getElementById("sttModel"),
+        realtimeModel: document.getElementById("realtimeModel"),
+        realtimeModelRow: document.getElementById("realtimeModelRow"),
+        sttModelRow: document.getElementById("sttModelRow"),
+        micDevice: document.getElementById("micDevice"),
+        refreshMics: document.getElementById("refreshMics"),
+        ttsEnabled: document.getElementById("ttsEnabled"),
+        ttsMode: document.getElementById("ttsMode"),
+        ttsModel: document.getElementById("ttsModel"),
+        ttsVoice: document.getElementById("ttsVoice"),
+        ttsFormat: document.getElementById("ttsFormat"),
+        ttsSpeed: document.getElementById("ttsSpeed")
+      };
+
+      function setStatus(text) {
+        els.status.textContent = text;
+      }
+
+      function log(text) {
+        els.log.textContent = `${new Date().toLocaleTimeString()} ${text}\n` + els.log.textContent;
+      }
+
+      async function apiFetch(path, options = {}) {
+        const res = await fetch(`${apiBase}${path}`, {
+          headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+          ...options
+        });
+        if (!res.ok) {
+          const detail = await res.text();
+          throw new Error(detail || res.statusText);
+        }
+        return res;
+      }
+
+      async function loadPersonalities() {
+        try {
+          const res = await apiFetch("/personalities");
+          const data = await res.json();
+          data.forEach(p => {
+            const option = document.createElement("option");
+            option.value = p.name;
+            option.textContent = `${p.name} - ${p.description}`;
+            els.personality.appendChild(option);
+          });
+        } catch (err) {
+          log(`人格加载失败: ${err.message}`);
+        }
+      }
+
+      function browserSpeak(text) {
+        if (!("speechSynthesis" in window)) return false;
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = "zh-CN";
+          window.speechSynthesis.speak(utterance);
+          log("已使用浏览器语音朗读");
+          return true;
+        } catch (err) {
+          return false;
+        }
+      }
+
+      function browserSpeakAsync(text) {
+        if (!("speechSynthesis" in window)) return Promise.resolve(false);
+        return new Promise((resolve) => {
+          try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "zh-CN";
+            let settled = false;
+            const finish = (ok) => {
+              if (settled) return;
+              settled = true;
+              resolve(ok);
+            };
+            utterance.onend = () => finish(true);
+            utterance.onerror = () => finish(false);
+            window.speechSynthesis.speak(utterance);
+            log("已使用浏览器语音朗读");
+            setTimeout(() => finish(true), 30000);
+          } catch (err) {
+            resolve(false);
+          }
+        });
+      }
+
+      function waitForAudioEnd(audioEl) {
+        return new Promise((resolve) => {
+          if (!audioEl) {
+            resolve();
+            return;
+          }
+          let settled = false;
+          const finish = () => {
+            if (settled) return;
+            settled = true;
+            audioEl.removeEventListener("ended", onEnded);
+            audioEl.removeEventListener("error", onError);
+            audioEl.removeEventListener("pause", onPause);
+            resolve();
+          };
+          const onEnded = () => finish();
+          const onError = () => finish();
+          const onPause = () => {
+            if (audioEl.ended || audioEl.currentTime > 0) {
+              finish();
+            }
+          };
+          audioEl.addEventListener("ended", onEnded);
+          audioEl.addEventListener("error", onError);
+          audioEl.addEventListener("pause", onPause);
+        });
+      }
+
+      function getTtsMode() {
+        if (!els.ttsMode) return "browser";
+        return els.ttsMode.value;
+      }
+
+      async function speak(text) {
+        if (!els.ttsEnabled.checked) return;
+        if (!text) return;
+        const task = async () => {
+          if (getTtsMode() === "browser") {
+            const ok = await browserSpeakAsync(text);
+            if (!ok) {
+              log("浏览器朗读不可用");
+            }
+            return;
+          }
+          const payload = {
+            text,
+            model: els.ttsModel.value,
+            voice: els.ttsVoice.value,
+            format: els.ttsFormat.value,
+            speed: parseFloat(els.ttsSpeed.value || "1.0")
+          };
+          try {
+            log("TTS 请求中...");
+            state.lastAudioUrl = null;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+            const res = await fetch(`${apiBase}/tts`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!res.ok) {
+              const detail = await res.text();
+              throw new Error(detail || res.statusText);
+            }
+            const blob = await res.blob();
+            if (!blob || blob.size === 0) {
+              log("TTS 返回空音频，尝试浏览器朗读");
+              const ok = await browserSpeakAsync(text);
+              if (!ok) {
+                log("浏览器朗读不可用");
+              }
+              return;
+            }
+            const url = URL.createObjectURL(blob);
+            state.lastAudioUrl = url;
+            els.audio.pause();
+            els.audio.src = url;
+            try {
+              await els.audio.play();
+            } catch (err) {
+              log("自动播放被浏览器限制，请点击“播放语音”");
+              return;
+            }
+            await waitForAudioEnd(els.audio);
+          } catch (err) {
+            if (err && err.name === "AbortError") {
+              log("TTS 超时，已改用浏览器朗读");
+              await browserSpeakAsync(text);
+              return;
+            }
+            log(`TTS 失败: ${err.message}`);
+            await browserSpeakAsync(text);
+          }
+        };
+        state.ttsQueue = state.ttsQueue.then(task).catch(() => {});
+        return state.ttsQueue;
+      }
+
+      function showQuestion(text) {
+        els.questionBox.textContent = text || "暂无问题";
+        state.questionNum += 1;
+        els.questionTag.textContent = `题目 ${state.questionNum}`;
+        els.followupTag.textContent = state.isFollowup ? "追问" : "主问题";
+        speechBuffer = "";
+        speechInterim = "";
+        els.answerInput.value = "";
+        speak(text);
+      }
+
+      function showEvaluation(result) {
+        if (!result || !result.evaluation) return;
+        const evalData = result.evaluation;
+        els.evaluation.innerHTML = `
+          <div class="metric"><span>总分</span><span>${evalData.total_score.toFixed(1)}</span></div>
+          <div class="metric"><span>技术准确性</span><span>${evalData.technical_accuracy.toFixed(1)}</span></div>
+          <div class="metric"><span>表达清晰度</span><span>${evalData.clarity.toFixed(1)}</span></div>
+          <div class="metric"><span>深度广度</span><span>${evalData.depth_breadth.toFixed(1)}</span></div>
+          <div class="metric"><span>关键词覆盖</span><span>${(evalData.keyword_coverage * 100).toFixed(0)}%</span></div>
+        `;
+      }
+
+      async function pollEvaluation(questionId, attempt = 0) {
+        if (!state.sessionId || !questionId) return;
+        try {
+          const res = await apiFetch(`/sessions/${state.sessionId}/evaluations/${questionId}`);
+          const data = await res.json();
+          if (data.has_evaluation && data.evaluation) {
+            showEvaluation({ evaluation: data.evaluation });
+            log(`评分更新: ${data.evaluation.total_score.toFixed(1)}`);
+            return;
+          }
+        } catch (err) {
+          log(`评分查询失败: ${err.message}`);
+          return;
+        }
+        if (attempt < 10) {
+          setTimeout(() => pollEvaluation(questionId, attempt + 1), 1000);
+        } else {
+          log("评分生成超时");
+        }
+      }
+
+      async function startInterview() {
+        try {
+          setStatus("正在创建会话...");
+          log("创建会话中...");
+          const payload = {
+            job_type: els.jobType.value.trim() || "后端开发",
+            difficulty: els.difficulty.value,
+            max_questions: parseInt(els.maxQuestions.value || "10", 10),
+            personality_name: els.personality.value || null
+          };
+          const res = await apiFetch("/sessions", {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+          const session = await res.json();
+          state.sessionId = session.session_id;
+          state.questionNum = 0;
+          state.isFollowup = false;
+          els.sessionTag.textContent = `会话 ${state.sessionId.slice(0, 8)}`;
+
+          setStatus("正在启动面试...");
+          const startRes = await apiFetch(`/sessions/${state.sessionId}/start`, { method: "POST" });
+          const startData = await startRes.json();
+          els.questionBox.textContent = startData.opening;
+          log(`开场白: ${startData.opening}`);
+          speak(startData.opening);
+          showQuestion(startData.first_question);
+          log(`首题: ${startData.first_question}`);
+          setStatus("面试进行中");
+        } catch (err) {
+          setStatus("启动失败");
+          log(`启动失败: ${err.message}`);
+        }
+      }
+
+      async function submitAnswer() {
+        const answer = els.answerInput.value.trim();
+        if (!answer) {
+          log("回答为空，未提交");
+          return;
+        }
+        if (!state.sessionId) {
+          log("会话未创建，无法提交");
+          return;
+        }
+
+        try {
+          if (state.isFollowup) {
+            log("提交追问答案...");
+            await apiFetch(`/sessions/${state.sessionId}/followup-answer`, {
+              method: "POST",
+              body: JSON.stringify({ answer })
+            });
+            log("追问已提交");
+            state.isFollowup = false;
+            await nextQuestion();
+            return;
+          }
+
+          if (els.asyncScoring.checked) {
+            log("提交答案（异步评分）...");
+            const res = await apiFetch(`/sessions/${state.sessionId}/answer-async`, {
+              method: "POST",
+              body: JSON.stringify({ answer })
+            });
+            const result = await res.json();
+            if (result.queued) {
+              log("评分生成中...");
+            }
+            if (result.queued && result.question_id) {
+              pollEvaluation(result.question_id);
+            }
+            await nextQuestion();
+            return;
+          }
+
+          log("提交答案...");
+          const res = await apiFetch(`/sessions/${state.sessionId}/answer`, {
+            method: "POST",
+            body: JSON.stringify({ answer })
+          });
+          const result = await res.json();
+          showEvaluation(result);
+          log(`评分: ${result.evaluation.total_score.toFixed(1)}`);
+
+          if (result.has_followup && result.followup_question) {
+            state.isFollowup = true;
+            els.questionBox.textContent = result.followup_question;
+            els.followupTag.textContent = "追问";
+            speechBuffer = "";
+            speechInterim = "";
+            els.answerInput.value = "";
+            speak(result.followup_question);
+          } else {
+            await nextQuestion();
+          }
+        } catch (err) {
+          log(`提交失败: ${err.message}`);
+          if (err.message.includes("Interview session not found")) {
+            setStatus("会话已丢失，请重新开始");
+            state.sessionId = null;
+          }
+        }
+      }
+
+      async function nextQuestion() {
+        if (!state.sessionId) {
+          log("会话未创建，无法下一题");
+          return;
+        }
+        try {
+          log("请求下一题...");
+          const res = await apiFetch(`/sessions/${state.sessionId}/next-question`);
+          const data = await res.json();
+          if (!data.has_next) {
+            log("已无下一题，结束面试");
+            await endInterview();
+            return;
+          }
+          state.isFollowup = false;
+          showQuestion(data.question);
+          log(`下一题: ${data.question}`);
+        } catch (err) {
+          log(`获取下一题失败: ${err.message}`);
+          if (err.message.includes("Interview session not found")) {
+            setStatus("会话已丢失，请重新开始");
+            state.sessionId = null;
+          }
+        }
+      }
+
+      async function endInterview() {
+        if (!state.sessionId) return;
+        try {
+          setStatus("生成报告中...");
+          const res = await apiFetch(`/sessions/${state.sessionId}/end`, { method: "POST" });
+          const report = await res.json();
+          log(`报告生成完成，总分 ${report.overall_score.toFixed(1)}`);
+          setStatus("面试结束");
+          state.sessionId = null;
+          state.questionNum = 0;
+          state.isFollowup = false;
+          els.sessionTag.textContent = "会话已结束";
+          els.questionTag.textContent = "题目 0";
+          els.followupTag.textContent = "主问题";
+        } catch (err) {
+          log(`结束失败: ${err.message}`);
+        }
+      }
+
+      function handleSpeech(text) {
+        const normalized = text.replace(/\s/g, "").toLowerCase();
+        if (normalized.includes("下一题") || normalized.includes("跳过") || normalized.includes("skip")) {
+          nextQuestion();
+          return;
+        }
+        if (normalized.includes("结束")) {
+          endInterview();
+          return;
+        }
+        els.answerInput.value = text;
+      }
+
+      let recognition = null;
+      let isRecognizing = false;
+      let micReady = false;
+      let dictationActive = false;
+      let stopRequested = false;
+      let autoSubmitPending = false;
+      let speechBuffer = "";
+      let speechInterim = "";
+      let realtimeWs = null;
+      let realtimeActive = false;
+      let realtimeStream = null;
+      let realtimeProcessor = null;
+      let realtimeAudioContext = null;
+      let realtimeSource = null;
+      let realtimeStopTimer = null;
+      let realtimeCloseTimer = null;
+      let realtimeClosing = false;
+      let mediaRecorder = null;
+      let recordingActive = false;
+      let recordingStream = null;
+      let recordingChunks = [];
+      let recordingStopTimer = null;
+
+      function setMicEnabled(enabled) {
+        els.micBtn.disabled = !enabled;
+      }
+
+      function setMicLabel() {
+        const active = dictationActive || recordingActive || realtimeActive || isRecognizing;
+        els.micBtn.textContent = active ? "停止录音" : "开始录音";
+      }
+
+      function updateAnswerInput() {
+        const interim = speechInterim ? ` ${speechInterim}` : "";
+        els.answerInput.value = `${speechBuffer}${interim}`.trim();
+      }
+
+      function appendTranscript(text) {
+        const cleaned = text.trim();
+        if (!cleaned) return;
+        if (speechBuffer && !speechBuffer.endsWith(" ")) {
+          speechBuffer += " ";
+        }
+        speechBuffer += cleaned;
+      }
+
+      function appendAnswerText(text) {
+        const cleaned = text.trim();
+        if (!cleaned) return;
+        const current = els.answerInput.value.trim();
+        els.answerInput.value = current ? `${current} ${cleaned}` : cleaned;
+      }
+
+      function isCommandOnly(text) {
+        const normalized = text.replace(/\s/g, "").toLowerCase();
+        return normalized === "下一题" || normalized === "跳过" || normalized === "skip" || normalized === "结束";
+      }
+
+      function getAudioConstraints() {
+        const constraints = {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        };
+        if (els.micDevice && els.micDevice.value) {
+          constraints.deviceId = { exact: els.micDevice.value };
+        }
+        return constraints;
+      }
+
+      async function loadMicDevices() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const inputs = devices.filter(d => d.kind === "audioinput");
+          if (!els.micDevice) return;
+          const current = els.micDevice.value;
+          els.micDevice.innerHTML = "";
+          const defaultOpt = document.createElement("option");
+          defaultOpt.value = "";
+          defaultOpt.textContent = "系统默认";
+          els.micDevice.appendChild(defaultOpt);
+          inputs.forEach((device, idx) => {
+            const option = document.createElement("option");
+            option.value = device.deviceId;
+            option.textContent = device.label || `麦克风 ${idx + 1}`;
+            els.micDevice.appendChild(option);
+          });
+          if (current) {
+            const match = Array.from(els.micDevice.options).some(opt => opt.value === current);
+            if (match) {
+              els.micDevice.value = current;
+            }
+          }
+        } catch (err) {
+          log(`麦克风列表获取失败: ${err.message}`);
+        }
+      }
+
+      function resetRecordingState() {
+        if (recordingStream) {
+          recordingStream.getTracks().forEach(track => track.stop());
+        }
+        recordingStream = null;
+        mediaRecorder = null;
+        recordingChunks = [];
+        recordingActive = false;
+        setMicLabel();
+      }
+
+      async function transcribeAudio(blob) {
+        const form = new FormData();
+        form.append("file", blob, "audio.webm");
+        form.append("model", els.sttModel.value);
+        form.append("language", "zh");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const res = await fetch(`${apiBase}/stt`, {
+          method: "POST",
+          body: form,
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (!res.ok) {
+          const detail = await res.text();
+          throw new Error(detail || res.statusText);
+        }
+        const data = await res.json();
+        return (data.text || "").trim();
+      }
+
+      async function startServerRecording() {
+        if (recordingActive) return;
+        if (!window.MediaRecorder) {
+          log("当前浏览器不支持录音");
+          return;
+        }
+        try {
+          recordingStream = await navigator.mediaDevices.getUserMedia({ audio: getAudioConstraints() });
+          await loadMicDevices();
+        } catch (err) {
+          log(`麦克风权限失败: ${err.message}`);
+          try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const inputs = devices.filter(d => d.kind === "audioinput");
+            log(inputs.length ? `检测到 ${inputs.length} 个麦克风设备` : "未检测到麦克风设备");
+          } catch (e) {
+            log("无法枚举麦克风设备");
+          }
+          return;
+        }
+        const options = {};
+        if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+          options.mimeType = "audio/webm;codecs=opus";
+        } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+          options.mimeType = "audio/webm";
+        }
+        mediaRecorder = new MediaRecorder(recordingStream, options);
+        recordingChunks = [];
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            recordingChunks.push(event.data);
+          }
+        };
+        mediaRecorder.onerror = (event) => {
+          log(`录音错误: ${event.error?.message || event.error || "unknown"}`);
+        };
+        mediaRecorder.onstop = async () => {
+          if (recordingStopTimer) {
+            clearTimeout(recordingStopTimer);
+            recordingStopTimer = null;
+          }
+          const blob = new Blob(recordingChunks, { type: mediaRecorder?.mimeType || "audio/webm" });
+          recordingChunks = [];
+          const shouldSubmit = autoSubmitPending;
+          autoSubmitPending = false;
+          resetRecordingState();
+          try {
+            log("录音结束，正在转写...");
+            const text = await transcribeAudio(blob);
+            if (text) {
+              log(`语音识别: ${text}`);
+              if (isCommandOnly(text)) {
+                handleSpeech(text);
+              } else {
+                appendAnswerText(text);
+              }
+            } else {
+              log("语音识别为空，请重试或切换浏览器识别");
+            }
+            if (shouldSubmit) {
+              submitAnswer();
+            }
+          } catch (err) {
+            if (err && err.name === "AbortError") {
+              log("语音识别超时，请重试或切换浏览器识别");
+            } else {
+              log(`语音识别失败: ${err.message}`);
+            }
+          }
+        };
+        mediaRecorder.start();
+        recordingActive = true;
+        setMicLabel();
+        log("录音开始（再点一次停止并转写）");
+        if (recordingStopTimer) {
+          clearTimeout(recordingStopTimer);
+        }
+        recordingStopTimer = setTimeout(() => {
+          if (recordingActive) {
+            log("录音超时，已自动停止");
+            stopServerRecording(false);
+          }
+        }, 20000);
+      }
+
+      function stopServerRecording(shouldSubmit) {
+        if (!recordingActive || !mediaRecorder) return;
+        autoSubmitPending = Boolean(shouldSubmit);
+        recordingActive = false;
+        setMicLabel();
+        if (recordingStopTimer) {
+          clearTimeout(recordingStopTimer);
+          recordingStopTimer = null;
+        }
+        try {
+          mediaRecorder.stop();
+        } catch (err) {
+          resetRecordingState();
+        }
+      }
+
+      function downsampleBuffer(buffer, inputSampleRate, outputSampleRate) {
+        if (outputSampleRate === inputSampleRate) {
+          return buffer;
+        }
+        const sampleRateRatio = inputSampleRate / outputSampleRate;
+        const newLength = Math.round(buffer.length / sampleRateRatio);
+        const result = new Float32Array(newLength);
+        let offsetResult = 0;
+        let offsetBuffer = 0;
+        while (offsetResult < result.length) {
+          const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+          let accum = 0;
+          let count = 0;
+          for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i += 1) {
+            accum += buffer[i];
+            count += 1;
+          }
+          result[offsetResult] = accum / Math.max(count, 1);
+          offsetResult += 1;
+          offsetBuffer = nextOffsetBuffer;
+        }
+        return result;
+      }
+
+      function floatTo16BitPCM(floatBuffer) {
+        const output = new Int16Array(floatBuffer.length);
+        for (let i = 0; i < floatBuffer.length; i += 1) {
+          let s = Math.max(-1, Math.min(1, floatBuffer[i]));
+          output[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+        }
+        return output;
+      }
+
+      function pcmToBase64(int16Buffer) {
+        const bytes = new Uint8Array(int16Buffer.buffer);
+        let binary = "";
+        const chunkSize = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+        }
+        return btoa(binary);
+      }
+
+      function cleanupRealtime(reason) {
+        if (realtimeStopTimer) {
+          clearTimeout(realtimeStopTimer);
+          realtimeStopTimer = null;
+        }
+        if (realtimeCloseTimer) {
+          clearTimeout(realtimeCloseTimer);
+          realtimeCloseTimer = null;
+        }
+        if (realtimeProcessor) {
+          realtimeProcessor.disconnect();
+          realtimeProcessor.onaudioprocess = null;
+        }
+        if (realtimeSource) {
+          realtimeSource.disconnect();
+        }
+        if (realtimeAudioContext) {
+          realtimeAudioContext.close().catch(() => {});
+        }
+        if (realtimeStream) {
+          realtimeStream.getTracks().forEach(track => track.stop());
+        }
+        if (realtimeWs && (realtimeWs.readyState === WebSocket.OPEN || realtimeWs.readyState === WebSocket.CONNECTING)) {
+          realtimeWs.close();
+        }
+        realtimeWs = null;
+        realtimeProcessor = null;
+        realtimeSource = null;
+        realtimeAudioContext = null;
+        realtimeStream = null;
+        realtimeActive = false;
+        realtimeClosing = false;
+        setMicLabel();
+        if (reason) {
+          log(reason);
+        }
+      }
+
+      async function startRealtimeRecording() {
+        if (realtimeActive) return;
+        if (!window.WebSocket) {
+          log("当前浏览器不支持 WebSocket");
+          return;
+        }
+        try {
+          realtimeStream = await navigator.mediaDevices.getUserMedia({ audio: getAudioConstraints() });
+          await loadMicDevices();
+        } catch (err) {
+          log(`麦克风权限失败: ${err.message}`);
+          return;
+        }
+
+        const model = els.realtimeModel ? els.realtimeModel.value : "gpt-realtime-mini-2025-12-15";
+        const wsUrl = `${wsBase}${apiBase}/ws/realtime-stt?model=${encodeURIComponent(model)}&language=zh`;
+        realtimeWs = new WebSocket(wsUrl);
+
+        realtimeWs.onopen = async () => {
+          realtimeActive = true;
+          realtimeClosing = false;
+          setMicLabel();
+          log("Realtime 已连接，开始录音");
+          speechBuffer = els.answerInput.value.trim();
+          speechInterim = "";
+          updateAnswerInput();
+
+          realtimeAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+          await realtimeAudioContext.resume();
+          realtimeSource = realtimeAudioContext.createMediaStreamSource(realtimeStream);
+          realtimeProcessor = realtimeAudioContext.createScriptProcessor(4096, 1, 1);
+          const zeroGain = realtimeAudioContext.createGain();
+          zeroGain.gain.value = 0;
+          realtimeProcessor.onaudioprocess = (event) => {
+            if (!realtimeActive || !realtimeWs || realtimeWs.readyState !== WebSocket.OPEN) return;
+            const input = event.inputBuffer.getChannelData(0);
+            const downsampled = downsampleBuffer(input, realtimeAudioContext.sampleRate, 24000);
+            const pcm16 = floatTo16BitPCM(downsampled);
+            const payload = {
+              type: "audio",
+              audio: pcmToBase64(pcm16)
+            };
+            realtimeWs.send(JSON.stringify(payload));
+          };
+          realtimeSource.connect(realtimeProcessor);
+          realtimeProcessor.connect(zeroGain);
+          zeroGain.connect(realtimeAudioContext.destination);
+
+          if (realtimeStopTimer) {
+            clearTimeout(realtimeStopTimer);
+          }
+          realtimeStopTimer = setTimeout(() => {
+            if (realtimeActive) {
+              log("录音超时，已自动停止");
+              stopRealtimeRecording(false);
+            }
+          }, 20000);
+        };
+
+        realtimeWs.onmessage = (event) => {
+          let data;
+          try {
+            data = JSON.parse(event.data);
+          } catch (err) {
+            return;
+          }
+          if (data.type === "transcript") {
+            const text = (data.text || "").trim();
+            if (!text) return;
+            if (data.final) {
+              log(`语音识别: ${text}`);
+              if (isCommandOnly(text)) {
+                handleSpeech(text);
+              } else {
+                appendTranscript(text);
+                speechInterim = "";
+                updateAnswerInput();
+              }
+              if (autoSubmitPending) {
+                autoSubmitPending = false;
+                submitAnswer();
+              }
+              if (realtimeClosing) {
+                cleanupRealtime();
+              }
+            } else {
+              speechInterim = text;
+              updateAnswerInput();
+            }
+          } else if (data.type === "status") {
+            if (data.message === "speech_started") {
+              log("检测到说话开始");
+            }
+            if (data.message === "speech_stopped") {
+              log("检测到说话结束");
+            }
+          } else if (data.type === "error") {
+            log(`Realtime 错误: ${data.message}`);
+          }
+        };
+
+        realtimeWs.onerror = () => {
+          cleanupRealtime("Realtime 连接失败");
+        };
+
+        realtimeWs.onclose = () => {
+          cleanupRealtime();
+        };
+      }
+
+      function stopRealtimeRecording(shouldSubmit) {
+        if (!realtimeWs) return;
+        autoSubmitPending = Boolean(shouldSubmit);
+        realtimeClosing = true;
+        realtimeActive = false;
+        setMicLabel();
+        if (realtimeStopTimer) {
+          clearTimeout(realtimeStopTimer);
+          realtimeStopTimer = null;
+        }
+        if (realtimeStream) {
+          realtimeStream.getTracks().forEach(track => track.stop());
+        }
+        try {
+          if (realtimeWs.readyState === WebSocket.OPEN) {
+            realtimeWs.send(JSON.stringify({ type: "stop" }));
+          }
+        } catch (err) {
+          cleanupRealtime();
+          return;
+        }
+        if (realtimeCloseTimer) {
+          clearTimeout(realtimeCloseTimer);
+        }
+        realtimeCloseTimer = setTimeout(() => {
+          cleanupRealtime("Realtime 超时关闭");
+        }, 6000);
+        log("录音结束，等待转写...");
+      }
+
+      function startDictation() {
+        if (!recognition) return;
+        dictationActive = true;
+        stopRequested = false;
+        autoSubmitPending = false;
+        speechBuffer = els.answerInput.value.trim();
+        speechInterim = "";
+        setMicLabel();
+        recognition.start();
+      }
+
+      function stopDictation(shouldSubmit) {
+        if (!recognition) return;
+        dictationActive = false;
+        stopRequested = true;
+        autoSubmitPending = Boolean(shouldSubmit);
+        setMicLabel();
+        recognition.stop();
+      }
+
+      function bindAudioEvents() {
+        els.audio.addEventListener("play", () => {
+          setMicEnabled(false);
+          if (dictationActive) {
+            stopDictation(false);
+          }
+          if (recordingActive) {
+            stopServerRecording(false);
+          }
+          if (realtimeActive) {
+            stopRealtimeRecording(false);
+          }
+        });
+        els.audio.addEventListener("ended", () => {
+          setMicEnabled(true);
+        });
+        els.audio.addEventListener("pause", () => {
+          setMicEnabled(true);
+        });
+      }
+      function initSpeech() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          els.micBtn.disabled = true;
+          els.micBtn.textContent = "浏览器不支持语音";
+          return;
+        }
+        recognition = new SpeechRecognition();
+        recognition.lang = "zh-CN";
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.onstart = () => {
+          isRecognizing = true;
+          setMicEnabled(true);
+        };
+        recognition.onend = () => {
+          isRecognizing = false;
+          setMicEnabled(true);
+          if (autoSubmitPending) {
+            autoSubmitPending = false;
+            submitAnswer();
+          }
+          if (dictationActive && !stopRequested) {
+            if (els.audio && !els.audio.paused) {
+              setTimeout(() => recognition.start(), 400);
+            } else {
+              setTimeout(() => recognition.start(), 200);
+            }
+          }
+        };
+        recognition.onresult = (event) => {
+          for (let i = event.resultIndex; i < event.results.length; i += 1) {
+            const result = event.results[i];
+            const text = result[0].transcript || "";
+            if (dictationActive) {
+              if (result.isFinal) {
+                appendTranscript(text);
+                speechInterim = "";
+              } else {
+                speechInterim = text.trim();
+              }
+              updateAnswerInput();
+            } else if (result.isFinal) {
+              log(`语音识别: ${text}`);
+              handleSpeech(text);
+            }
+          }
+        };
+        recognition.onerror = (event) => {
+          log(`语音识别错误: ${event.error}`);
+          if (event.error === "audio-capture" || event.error === "not-allowed" || event.error === "service-not-allowed") {
+            dictationActive = false;
+            stopRequested = true;
+            autoSubmitPending = false;
+            setMicLabel();
+            log("麦克风不可用：请检查权限或占用，然后再点“开始录音”");
+            return;
+          }
+          if (dictationActive && !stopRequested) {
+            setTimeout(() => recognition.start(), 400);
+          }
+        };
+      }
+
+      function updateSttUi() {
+        if (!els.sttMode) return;
+        const mode = els.sttMode.value;
+        const useServer = mode === "server";
+        const useRealtime = mode === "realtime";
+        if (els.sttModel) {
+          els.sttModel.disabled = !useServer;
+        }
+        if (els.realtimeModel) {
+          els.realtimeModel.disabled = !useRealtime;
+        }
+        if (els.sttModelRow) {
+          els.sttModelRow.style.display = useServer ? "block" : "none";
+        }
+        if (els.realtimeModelRow) {
+          els.realtimeModelRow.style.display = useRealtime ? "block" : "none";
+        }
+      }
+
+      function getSttMode() {
+        if (!els.sttMode) return "browser";
+        return els.sttMode.value;
+      }
+
+      function updateTtsUi() {
+        if (!els.ttsMode) return;
+        const useServer = getTtsMode() === "server";
+        els.ttsModel.disabled = !useServer;
+        els.ttsVoice.disabled = !useServer;
+        els.ttsFormat.disabled = !useServer;
+        els.ttsSpeed.disabled = !useServer;
+      }
+
+      els.startBtn.addEventListener("click", startInterview);
+      els.submitBtn.addEventListener("click", submitAnswer);
+      els.nextBtn.addEventListener("click", nextQuestion);
+      els.skipBtn.addEventListener("click", nextQuestion);
+      els.endBtn.addEventListener("click", endInterview);
+      els.micBtn.addEventListener("click", () => {
+        if (els.audio && !els.audio.paused) {
+          els.audio.pause();
+        }
+        if (getSttMode() === "realtime") {
+          if (realtimeActive) {
+            stopRealtimeRecording(true);
+            return;
+          }
+          startRealtimeRecording();
+          return;
+        }
+        if (getSttMode() === "server") {
+          if (recordingActive) {
+            stopServerRecording(true);
+            return;
+          }
+          startServerRecording();
+          return;
+        }
+        if (!recognition) return;
+        if (dictationActive || isRecognizing) {
+          stopDictation(true);
+          return;
+        }
+        if (navigator.mediaDevices && !micReady) {
+          navigator.mediaDevices.getUserMedia({ audio: getAudioConstraints() })
+            .then((stream) => {
+              stream.getTracks().forEach(track => track.stop());
+              micReady = true;
+              loadMicDevices();
+              startDictation();
+            })
+            .catch((err) => {
+              log(`麦克风权限失败: ${err.message}`);
+            });
+          return;
+        }
+        startDictation();
+      });
+      if (els.sttMode) {
+        els.sttMode.addEventListener("change", () => {
+          if (dictationActive || isRecognizing) {
+            stopDictation(false);
+          }
+          if (recordingActive) {
+            stopServerRecording(false);
+          }
+          if (realtimeActive) {
+            stopRealtimeRecording(false);
+          }
+          updateSttUi();
+        });
+      }
+      if (els.ttsMode) {
+        els.ttsMode.addEventListener("change", () => {
+          updateTtsUi();
+        });
+      }
+      if (els.refreshMics) {
+        els.refreshMics.addEventListener("click", () => {
+          loadMicDevices();
+        });
+      }
+      els.playAudioBtn.addEventListener("click", async () => {
+        if (getTtsMode() === "browser") {
+          browserSpeak(els.questionBox.textContent || "");
+          return;
+        }
+        if (!state.lastAudioUrl) {
+          await speak(els.questionBox.textContent || "");
+        }
+        if (!state.lastAudioUrl) {
+          log("没有可播放的语音，请确认 TTS 是否正常");
+          return;
+        }
+        try {
+          els.audio.pause();
+          els.audio.src = state.lastAudioUrl;
+          await els.audio.play();
+        } catch (err) {
+          log(`播放失败: ${err.message}`);
+          browserSpeak(els.questionBox.textContent || "");
+        }
+      });
+
+      loadPersonalities();
+      initSpeech();
+      bindAudioEvents();
+      setMicLabel();
+      updateSttUi();
+      updateTtsUi();
+      loadMicDevices();
+
+      window.addEventListener("error", (event) => {
+        log(`页面错误: ${event.message}`);
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        log(`页面错误: ${event.reason}`);
+      });
+    </script>
+  </body>
+</html>
+

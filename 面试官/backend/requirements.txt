@@ -1,0 +1,31 @@
+# Web 框架
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# AI 服务
+openai==1.10.0
+
+# RAG / 向量数据库
+chromadb==0.4.22
+
+# 配置管理
+python-dotenv==1.0.0
+pyyaml==6.0.1
+
+# CLI 工具
+rich==13.7.0
+typer==0.9.0
+
+# 工具库
+python-dateutil==2.8.2
+
+# 日志
+loguru==0.7.2
+
+# 测试
+pytest==7.4.4
+pytest-asyncio==0.23.3
+httpx==0.26.0
+websockets==12.0
