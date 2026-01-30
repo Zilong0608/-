@@ -70,12 +70,24 @@ class EvaluationEngine:
 
         try:
             # 1. 构建评估 prompt
+            reference_answer = (question.reference_answer or "").strip()
+            if not reference_answer:
+                try:
+                    reference_answer = self.ai_service.generate_reference_answer(
+                        question=question.content,
+                        job_type=job_type
+                    )
+                    question.reference_answer = reference_answer
+                except Exception as e:
+                    logger.warning(f"Failed to generate reference answer: {e}")
+                    reference_answer = ""
+
             prompt = build_evaluation_prompt(
                 job_type=job_type,
                 question_type=question.question_type.value,
                 difficulty=question.difficulty.value,
                 question=question.content,
-                reference_answer=question.reference_answer,
+                reference_answer=reference_answer,
                 user_answer=user_answer
             )
 

@@ -26,10 +26,13 @@ import { motion, AnimatePresence } from "motion/react";
 type AppState = "setup" | "interview" | "report";
 
 type ReportDetail = {
+  question_id?: string;
   question: string;
   user_answer: string;
   total_score: number;
   llm_answer: string;
+  is_followup?: boolean;
+  parent_question_id?: string;
   weaknesses?: string[];
   suggestions?: string[];
 };
@@ -218,6 +221,7 @@ export default function App() {
   const strengthText = report?.strong_areas?.length ? report.strong_areas.join("；") : "暂无";
   const weaknessText = report?.weak_areas?.length ? report.weak_areas.join("；") : "暂无";
   const suggestionList = report?.suggestions?.length ? report.suggestions : [];
+  const detailItems = report?.details ?? [];
   const showReportContent = Boolean(report) && !isReportLoading;
 
   async function apiFetch(path: string, init?: RequestInit) {
@@ -1226,11 +1230,69 @@ export default function App() {
                                   <span className="text-emerald-500 font-bold mt-1">2.</span>
                                   <span>在算法题中，尝试多使用 TypeScript 进行规范化编码。</span>
                                </li>
-                            </ul>
-                         </div>
-                      </div>
+                          </ul>
+                       </div>
 
-                      <div className="mt-8 pt-6 border-t border-slate-200/60 flex gap-4">
+                       <div className="w-full h-px bg-slate-200/60" />
+
+                       <div className="space-y-3">
+                          <h4 className="text-sm font-bold text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                             Question Review
+                          </h4>
+                          <div className="space-y-4">
+                             {detailItems.length ? (
+                               detailItems.map((item, index) => (
+                                 <div
+                                   key={item.question_id ?? `${index}-${item.question}`}
+                                   className="rounded-2xl border border-white/70 bg-white/50 p-4 shadow-sm"
+                                 >
+                                   <div className="flex items-center gap-2 text-xs text-slate-500">
+                                      <span className="font-semibold text-slate-700">Q{index + 1}</span>
+                                      {item.is_followup && (
+                                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">
+                                          追问
+                                        </span>
+                                      )}
+                                      <span className="ml-auto font-semibold text-indigo-600">
+                                        {Math.round((item.total_score || 0) * 10)}/100
+                                      </span>
+                                   </div>
+
+                                   <div className="mt-3 space-y-2 text-sm">
+                                      <div>
+                                         <div className="text-xs uppercase tracking-widest text-slate-400">问题</div>
+                                         <div className="text-slate-700">{item.question || "暂无"}</div>
+                                      </div>
+                                      <div>
+                                         <div className="text-xs uppercase tracking-widest text-slate-400">你的回答</div>
+                                         <div className="text-slate-700 whitespace-pre-wrap">
+                                           {item.user_answer || "未作答"}
+                                         </div>
+                                      </div>
+                                      {item.weaknesses?.length ? (
+                                        <div>
+                                           <div className="text-xs uppercase tracking-widest text-slate-400">不足</div>
+                                           <div className="text-slate-600">{item.weaknesses.join("；")}</div>
+                                        </div>
+                                      ) : null}
+                                      {item.suggestions?.length ? (
+                                        <div>
+                                           <div className="text-xs uppercase tracking-widest text-slate-400">建议</div>
+                                           <div className="text-slate-600">{item.suggestions.join("；")}</div>
+                                        </div>
+                                      ) : null}
+                                   </div>
+                                 </div>
+                               ))
+                             ) : (
+                               <div className="text-sm text-slate-400">暂无明细</div>
+                             )}
+                          </div>
+                       </div>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-slate-200/60 flex gap-4">
                          <button className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-medium hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10">
                             <Share2 className="w-4 h-4" />
                             Export Report

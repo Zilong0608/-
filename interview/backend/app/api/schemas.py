@@ -103,8 +103,11 @@ class NextQuestionResponse(BaseModel):
 
 class ReportDetailItem(BaseModel):
     """Report detail item"""
+    question_id: Optional[str] = None
     question: str
     user_answer: str
+    is_followup: Optional[bool] = False
+    parent_question_id: Optional[str] = None
     total_score: float
     technical_accuracy: float
     clarity: float

@@ -66,25 +66,33 @@ def get_engine() -> InterviewEngine:
 def _build_report_details(engine: InterviewEngine, session_id: str, job_type: str) -> List[Dict]:
     records = engine.data_service.get_answer_records(session_id)
     evaluations = engine.data_service.get_evaluations(session_id)
-    eval_map = {e.get("question_id"): e for e in evaluations}
+    eval_map: Dict[str, Dict] = {}
+    for item in evaluations:
+        eval_map[item.get("question_id")] = item
+    llm_cache: Dict[str, str] = {}
 
     details: List[Dict] = []
     for record in records:
-        if record.get("is_followup"):
-            continue
+        question_id = record.get("question_id")
         question = (record.get("question_content") or "").strip()
         user_answer = (record.get("user_answer") or "").strip()
-        eval_data = eval_map.get(record.get("question_id"), {})
+        eval_data = eval_map.get(question_id, {})
         llm_answer = (record.get("reference_answer") or "").strip()
         if not llm_answer and question:
             try:
-                llm_answer = engine.ai_service.generate_reference_answer(question, job_type=job_type)
+                llm_answer = llm_cache.get(question)
+                if not llm_answer:
+                    llm_answer = engine.ai_service.generate_reference_answer(question, job_type=job_type)
+                    llm_cache[question] = llm_answer
             except Exception:
-                llm_answer = "????????"
+                llm_answer = ""
 
         details.append({
+            "question_id": question_id,
             "question": question,
             "user_answer": user_answer,
+            "is_followup": bool(record.get("is_followup")),
+            "parent_question_id": record.get("parent_question_id"),
             "total_score": float(eval_data.get("total_score", 0.0)),
             "technical_accuracy": float(eval_data.get("technical_accuracy", 0.0)),
             "clarity": float(eval_data.get("clarity", 0.0)),

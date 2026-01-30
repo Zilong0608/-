@@ -520,10 +520,53 @@ class InterviewEngine:
         session.end_time = datetime.now()
         self.data_service.save_session(session)
 
+        if not session.answer_records:
+            try:
+                session.answer_records = [
+                    AnswerRecord.from_dict(r)
+                    for r in self.data_service.get_answer_records(session_id)
+                ]
+            except Exception as e:
+                logger.warning(f"Failed to reload answer records: {e}")
+
         # 获取所有评估结果
         evaluations_data = self.data_service.get_evaluations(session_id)
-        evaluations = [self._dict_to_evaluation(e) for e in evaluations_data]
-
+        evaluations_map: Dict[str, Dict] = {}
+        for item in evaluations_data:
+            evaluations_map[item.get("question_id")] = item
+        
+        for record in session.answer_records:
+            question_id = record.question.question_id
+            if question_id in evaluations_map:
+                continue
+            try:
+                evaluation = self.evaluation_engine.evaluate_answer(
+                    question=record.question,
+                    user_answer=record.user_answer,
+                    personality=session.personality,
+                    job_type=session.config.job_type
+                )
+                self.data_service.save_evaluation(
+                    session_id,
+                    question_id,
+                    evaluation
+                )
+            except Exception as e:
+                logger.error(f"Failed to evaluate answer for {question_id}: {e}")
+        
+        evaluations_data = self.data_service.get_evaluations(session_id)
+        evaluations_map = {}
+        for item in evaluations_data:
+            evaluations_map[item.get("question_id")] = item
+        
+        evaluations = [
+            self._dict_to_evaluation(evaluations_map[qid])
+            for qid in {
+                r.question.question_id for r in session.answer_records if not r.is_followup
+            }
+            if qid in evaluations_map
+        ]
+        
         if not evaluations:
             logger.warning(f"No evaluations found for session {session_id}")
             total_time_minutes = session.get_elapsed_minutes()
@@ -555,7 +598,7 @@ class InterviewEngine:
         stats = self.evaluation_engine.calculate_statistics(evaluations)
 
         # 构建答题详情文本
-        answer_details = self._build_answer_details(session.answer_records, evaluations)
+        answer_details = self._build_answer_details(session.answer_records, evaluations_map)
 
         # 构建报告生成 prompt
         prompt = build_final_report_prompt(
@@ -717,41 +760,33 @@ class InterviewEngine:
         )
 
     def _build_answer_details(
-        self,
-        answer_records: list,
-        evaluations: list
-    ) -> str:
-        """
-        构建答题详情文本
-
-        Args:
-            answer_records: 答题记录列表
-            evaluations: 评估结果列表
-
-        Returns:
-            详情文本
-        """
-        details = []
-
-        # 只统计非追问题目
-        main_records = [r for r in answer_records if not r.is_followup]
-
-        for i, record in enumerate(main_records, 1):
-            # 找到对应的评估结果
-            eval_result = next(
-                (e for e in evaluations if e.technical_accuracy >= 0),  # 简化匹配
-                None
-            )
-
-            if eval_result:
+            self,
+            answer_records: list,
+            evaluations_map: Dict
+        ) -> str:
+            """Build short answer details for report prompt."""
+            details = []
+    
+            main_records = [r for r in answer_records if not r.is_followup]
+    
+            for i, record in enumerate(main_records, 1):
+                eval_data = evaluations_map.get(record.question.question_id)
+                if not eval_data:
+                    continue
+    
+                eval_result = eval_data
+                if isinstance(eval_data, dict):
+                    eval_result = self._dict_to_evaluation(eval_data)
+    
                 details.append(
-                    f"题目{i}：{record.question.content[:50]}...\n"
-                    f"  得分：{eval_result.total_score:.1f}/10\n"
-                    f"  主要不足：{', '.join(eval_result.weaknesses[:2])}\n"
+                    f"Question {i}: {record.question.content[:60]}...\n"
+                    f"  Score: {eval_result.total_score:.1f}/10\n"
+                    f"  Weaknesses: {', '.join(eval_result.weaknesses[:2])}\n"
                 )
-
-        return "\n".join(details) if details else "无答题记录"
-
+    
+            return "\n".join(details) if details else "No answer records"
+    
+    
     def _dict_to_evaluation(self, data: Dict) -> EvaluationResult:
         """将字典转换为 EvaluationResult 对象"""
         return EvaluationResult(
