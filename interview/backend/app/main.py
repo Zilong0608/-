@@ -129,7 +129,7 @@ def initialize_engine() -> InterviewEngine:
         logger.info(f"Using JSON question source: {json_path}")
     else:
         question_repo = QuestionRepository(
-            vector_store_path=os.getenv('RAG_VECTOR_STORE_PATH', '../数据/data_index'),
+            vector_store_path=os.getenv('RAG_VECTOR_STORE_PATH', '../data/data_index'),
             preload_count=rag_config['preload_count'],
             refill_threshold=rag_config['refill_threshold']
         )

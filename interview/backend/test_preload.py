@@ -18,11 +18,11 @@ def main():
 
     try:
         # 连接 RAG 库
-        rag_path = r"C:\Users\15048\Desktop\rag库\数据\data_index"
+        rag_path = Path(__file__).resolve().parents[2] / "data" / "data_index"
         print(f"连接到: {rag_path}")
 
         repo = QuestionRepository(
-            vector_store_path=rag_path,
+            vector_store_path=str(rag_path),
             preload_count=5  # 只加载5个问题测试
         )
 

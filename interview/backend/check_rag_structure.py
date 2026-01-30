@@ -4,14 +4,16 @@
 检查 RAG 库数据结构
 """
 
+from pathlib import Path
+
 import chromadb
 from chromadb.config import Settings
 
 # 连接到 RAG 库
-rag_path = r"C:\Users\15048\Desktop\rag库\数据\data_index"
+rag_path = Path(__file__).resolve().parents[2] / "data" / "data_index"
 
 client = chromadb.PersistentClient(
-    path=rag_path,
+    path=str(rag_path),
     settings=Settings(
         anonymized_telemetry=False,
         allow_reset=False

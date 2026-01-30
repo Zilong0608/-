@@ -57,7 +57,7 @@ def check_rag_connection():
     """检查 RAG 连接"""
     try:
         load_dotenv()
-        vector_store_path = os.getenv('RAG_VECTOR_STORE_PATH', '../数据/data_index')
+        vector_store_path = os.getenv('RAG_VECTOR_STORE_PATH', '../data/data_index')
 
         console.print(f"[cyan]检查 RAG 数据库: {vector_store_path}[/cyan]")
 

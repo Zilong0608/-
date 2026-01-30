@@ -11,7 +11,7 @@ from pathlib import Path
 
 import httpx
 # 添加数据目录到Python路径，以便导入VectorStore
-rag_data_path = Path(__file__).parent.parent.parent.parent.parent / "数据"
+rag_data_path = Path(__file__).parent.parent.parent.parent.parent / "data"
 if rag_data_path.exists():
     sys.path.insert(0, str(rag_data_path))
 

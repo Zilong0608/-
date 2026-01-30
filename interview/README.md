@@ -65,7 +65,7 @@ cp .env.example .env
 OPENAI_API_KEY=your_openai_api_key_here
 
 # RAG 向量数据库路径
-RAG_VECTOR_STORE_PATH=../数据/data_index
+RAG_VECTOR_STORE_PATH=../data/data_index
 
 # 数据库配置
 DATABASE_TYPE=sqlite
