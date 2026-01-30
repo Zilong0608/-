@@ -1,2 +1,9 @@
 nul
 .env
+
+node_modules/
+语音面试官页面设计/node_modules/
+__pycache__/
+*.pyc
+*.db
+.env

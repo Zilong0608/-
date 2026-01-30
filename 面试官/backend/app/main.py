@@ -18,7 +18,7 @@ from .api import router, set_engine
 from .core.interview_engine import InterviewEngine
 from .core.personality_manager import PersonalityManager
 from .core.evaluation_engine import EvaluationEngine
-from .services.question_service import QuestionRepository, JsonQuestionRepository
+from .services.question_service import QuestionRepository, JsonQuestionRepository, SupabaseQuestionRepository
 from .services.data_service import DataService
 from .services.ai_service import AIService
 from .utils.logger import setup_logger, get_logger
@@ -106,8 +106,21 @@ def initialize_engine() -> InterviewEngine:
 
     # 4. 初始化问题仓库 (JSON or RAG)
     rag_config = config['rag']
+    supabase_url = os.getenv('SUPABASE_URL')
+    supabase_key = os.getenv('SUPABASE_SERVICE_KEY')
+    supabase_table = os.getenv('SUPABASE_TABLE', 'interview_questions')
     json_path = os.getenv('QUESTION_JSON_PATH')
-    if json_path:
+
+    if supabase_url and supabase_key:
+        question_repo = SupabaseQuestionRepository(
+            supabase_url=supabase_url,
+            supabase_key=supabase_key,
+            table_name=supabase_table,
+            preload_count=rag_config['preload_count'],
+            refill_threshold=rag_config['refill_threshold']
+        )
+        logger.info(f"Using Supabase question source: {supabase_url}")
+    elif json_path:
         question_repo = JsonQuestionRepository(
             json_path=json_path,
             preload_count=rag_config['preload_count'],

@@ -9,6 +9,7 @@ import sys
 from typing import List, Optional, Dict, Any
 from pathlib import Path
 
+import httpx
 # 添加数据目录到Python路径，以便导入VectorStore
 rag_data_path = Path(__file__).parent.parent.parent.parent.parent / "数据"
 if rag_data_path.exists():
@@ -162,6 +163,229 @@ class JsonQuestionRepository:
     ) -> List[Question]:
         if not self._all_questions:
             raise QuestionPoolEmptyException("No questions loaded from JSON")
+
+        self._current_category = question_category
+        if question_category:
+            questions = list(self._all_questions_by_category.get(question_category, []))
+        else:
+            questions = list(self._all_questions)
+        random.shuffle(questions)
+        self.question_pool = questions[:self.preload_count]
+        return self.question_pool
+
+    def get_next_question(
+        self,
+        exclude_ids: Optional[List[str]] = None,
+        job_type: Optional[str] = None,
+        difficulty: Optional[DifficultyLevel] = None,
+        question_category: Optional[str] = None
+    ) -> Optional[Question]:
+        exclude_ids = exclude_ids or []
+        available = [q for q in self.question_pool if q.question_id not in exclude_ids]
+
+        if len(available) < self.refill_threshold:
+            self._refill_question_pool(exclude_ids)
+            available = [q for q in self.question_pool if q.question_id not in exclude_ids]
+
+        if not available:
+            return None
+
+        return random.choice(available)
+
+    def _refill_question_pool(self, exclude_ids: List[str]):
+        source = self._all_questions
+        if self._current_category:
+            source = self._all_questions_by_category.get(self._current_category, [])
+        questions = [q for q in source if q.question_id not in exclude_ids]
+        random.shuffle(questions)
+        self.question_pool.extend(questions[: self.preload_count])
+
+        seen = set()
+        unique_pool = []
+        for q in self.question_pool:
+            if q.question_id in seen:
+                continue
+            seen.add(q.question_id)
+            unique_pool.append(q)
+        self.question_pool = unique_pool
+
+    def search_questions_by_keyword(self, keyword: str, top_k: int = 10) -> List[Question]:
+        if not keyword:
+            return []
+        matches = [q for q in self._all_questions if keyword in q.content]
+        return matches[:top_k]
+
+    def test_connection(self) -> bool:
+        try:
+            return bool(self._all_questions)
+        except Exception:
+            return False
+
+    def _infer_job_category(self, source_file: str) -> str:
+        source_file = (source_file or "").lower()
+
+        if 'java' in source_file or 'spring' in source_file:
+            return 'Java开发'
+        elif 'python' in source_file or 'django' in source_file or 'flask' in source_file:
+            return 'Python开发'
+        elif 'javascript' in source_file or 'js' in source_file or 'react' in source_file or 'vue' in source_file:
+            return '前端开发'
+        elif 'c++' in source_file or 'cpp' in source_file:
+            return 'C++开发'
+        elif 'go' in source_file or 'golang' in source_file:
+            return 'Go开发'
+        elif 'database' in source_file or 'mysql' in source_file or 'sql' in source_file:
+            return '数据库'
+        elif 'algorithm' in source_file or '算法' in source_file:
+            return '算法'
+        elif 'system' in source_file or '系统' in source_file:
+            return '系统设计'
+        elif 'hr' in source_file or '面试' in source_file or '面谈' in source_file:
+            return 'HR面试'
+        else:
+            return '通用'
+
+
+class SupabaseQuestionRepository:
+    """
+    Supabase-based question repository (load all questions on startup).
+    """
+
+    def __init__(
+        self,
+        supabase_url: str,
+        supabase_key: str,
+        table_name: str = "interview_questions",
+        preload_count: int = 100,
+        refill_threshold: int = 20
+    ):
+        self.supabase_url = supabase_url.rstrip("/")
+        self.supabase_key = supabase_key
+        self.table_name = table_name
+        self.preload_count = preload_count
+        self.refill_threshold = refill_threshold
+
+        self.question_pool: List[Question] = []
+        self._all_questions: List[Question] = []
+        self._all_questions_by_category: Dict[str, List[Question]] = {}
+        self._current_category: Optional[str] = None
+        self._category_display_map = {
+            "LLM": "LLM大模型",
+            "Oracle": "Oracle数据库",
+            "SLAM": "SLAM定位/视觉",
+            "Web3": "Web3区块链",
+            "数据库": "数据库基础",
+            "测试": "测试开发",
+            "算法": "算法与图形",
+            "网安": "网络安全",
+            "其他": "综合题目"
+        }
+
+        self._load_questions()
+
+    def _load_questions(self):
+        rows = self._fetch_all_rows()
+        if not rows:
+            raise QuestionPoolEmptyException("No questions found in Supabase table")
+        self._all_questions = self._parse_rows(rows)
+        if not self._all_questions:
+            raise QuestionPoolEmptyException("No questions parsed from Supabase rows")
+
+    def _fetch_all_rows(self) -> List[Dict[str, Any]]:
+        headers = {
+            "apikey": self.supabase_key,
+            "Authorization": f"Bearer {self.supabase_key}"
+        }
+        rows: List[Dict[str, Any]] = []
+        limit = 1000
+        offset = 0
+
+        with httpx.Client(timeout=30.0) as client:
+            while True:
+                url = f"{self.supabase_url}/rest/v1/{self.table_name}"
+                params = {
+                    "select": "id,category,question,source",
+                    "limit": limit,
+                    "offset": offset
+                }
+                resp = client.get(url, headers=headers, params=params)
+                if resp.status_code >= 400:
+                    raise RAGConnectionException(f"Supabase request failed: {resp.text}")
+                batch = resp.json()
+                if not batch:
+                    break
+                rows.extend(batch)
+                if len(batch) < limit:
+                    break
+                offset += limit
+
+        return rows
+
+    def _parse_rows(self, rows: List[Dict[str, Any]]) -> List[Question]:
+        questions: List[Question] = []
+        seen = set()
+
+        for row in rows:
+            category_key = (row.get("category") or "").strip() or None
+            question_text = (row.get("question") or "").strip()
+            if not question_text:
+                continue
+            if question_text in seen:
+                continue
+            seen.add(question_text)
+
+            display_category = self._get_display_category(category_key)
+            metadata = {}
+            if category_key:
+                metadata = {**metadata, "category_key": category_key, "category_name": display_category}
+            source_file = row.get("source") or ""
+            job_category = display_category or self._infer_job_category(source_file)
+            qid = row.get("id") or f"supabase_{len(questions) + 1:07d}"
+
+            questions.append(Question(
+                question_id=str(qid),
+                content=question_text,
+                reference_answer="",
+                question_type=QuestionType.CONCEPT,
+                difficulty=DifficultyLevel.INTERMEDIATE,
+                keywords=[],
+                job_category=job_category,
+                metadata=metadata
+            ))
+
+        self._all_questions_by_category = {}
+        for q in questions:
+            key = q.metadata.get("category_key")
+            if not key:
+                continue
+            self._all_questions_by_category.setdefault(key, []).append(q)
+
+        return questions
+
+    def list_categories(self) -> List[Dict[str, Any]]:
+        categories = []
+        for key, items in sorted(self._all_questions_by_category.items()):
+            categories.append({
+                "key": key,
+                "name": self._get_display_category(key) or key,
+                "count": len(items)
+            })
+        return categories
+
+    def _get_display_category(self, key: Optional[str]) -> str:
+        if not key:
+            return ""
+        return self._category_display_map.get(key, key)
+
+    def preload_questions(
+        self,
+        job_type: Optional[str] = None,
+        difficulty: Optional[DifficultyLevel] = None,
+        question_type: Optional[QuestionType] = None,
+        question_category: Optional[str] = None
+    ) -> List[Question]:
+        if not self._all_questions:
+            raise QuestionPoolEmptyException("No questions loaded from Supabase")
 
         self._current_category = question_category
         if question_category:
