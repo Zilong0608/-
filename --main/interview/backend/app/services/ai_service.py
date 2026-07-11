@@ -211,11 +211,11 @@ class AIService:
             return ""
 
         prompt = (
-            f"你是资深{job_type or '技术'}面试官。"
-            "请针对下面问题给出简洁标准答案，要求："
-            "3-5条要点、每条不超过20字、总字数<=120。"
-            "只输出答案要点，不要额外解释。\n\n"
-            f"问题：{question}"
+            f"You are a senior {job_type or 'technical'} interviewer. "
+            "Give a concise reference answer IN ENGLISH for the question below. "
+            "Requirements: 3-5 bullet points, each under 15 words, total under 80 words. "
+            "Output only the answer points, no extra explanation.\n\n"
+            f"Question: {question}"
         )
 
         def _call():

@@ -104,7 +104,7 @@ def _build_report_details(engine: InterviewEngine, session_id: str, job_type: st
 
         details.append({
             "question_id": question_id,
-            "question": question,
+            "question": _to_english(engine, question),
             "user_answer": user_answer,
             "is_followup": bool(record.get("is_followup")),
             "parent_question_id": record.get("parent_question_id"),

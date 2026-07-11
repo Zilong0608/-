@@ -83,6 +83,27 @@ const CATEGORY_LABELS_EN: Record<string, string> = {
 
 const ALL_BANKS_OPTION = { label: "All Question Banks", value: "" };
 
+// English display labels for interviewer personas.
+// `value` must stay as the original persona name (Chinese) for backend lookup.
+const PERSONA_LABELS_EN: Record<string, { label: string; desc: string }> = {
+  "友好引导型": {
+    label: "Friendly Mentor",
+    desc: "Encouraging like a mentor — gives hints and guides your thinking"
+  },
+  "严格专业型": {
+    label: "Strict Professional",
+    desc: "Like a senior big-tech interviewer — focuses on technical detail and accuracy"
+  },
+  "压力测试型": {
+    label: "Pressure Tester",
+    desc: "Deliberately challenging — tests how you perform under pressure"
+  },
+  "实战导向型": {
+    label: "Hands-on Practical",
+    desc: "Focuses on real project experience and practical problem solving"
+  }
+};
+
 // Fallback list shown if the backend returns no categories,
 // so the selector never disappears from the setup page.
 const FALLBACK_CATEGORY_OPTIONS = [
@@ -332,9 +353,9 @@ export default function App() {
       const res = await apiFetch("/personalities");
       const data = await res.json();
       const options = [{ label: "Random", value: "" }, ...data.map((item: any) => ({
-        label: item.name,
+        label: PERSONA_LABELS_EN[item.name]?.label || item.name,
         value: item.name,
-        desc: item.description
+        desc: PERSONA_LABELS_EN[item.name]?.desc || item.description
       }))];
       setPersonaOptions(options);
     } catch (err) {

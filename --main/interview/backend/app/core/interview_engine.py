@@ -277,10 +277,11 @@ class InterviewEngine:
 
         current_question = session.current_question
 
-        # 0. 英文回答先翻译成中文，再与题库匹配/评估
-        answer = self._normalize_answer(answer)
+        # 0. 英文回答先翻译成中文用于题库匹配/评估；
+        #    记录中保留用户原文，报告里展示原始回答
+        evaluation_answer = self._normalize_answer(answer)
 
-        # 1. 保存答题记录
+        # 1. 保存答题记录（保存原文）
         answer_record = AnswerRecord(
             question=current_question,
             user_answer=answer,
@@ -291,10 +292,10 @@ class InterviewEngine:
         session.answer_records.append(answer_record)
         self.data_service.save_answer_record(session_id, answer_record)
 
-        # 2. 评估答案
+        # 2. 评估答案（用中文译文）
         evaluation = self.evaluation_engine.evaluate_answer(
             question=current_question,
-            user_answer=answer,
+            user_answer=evaluation_answer,
             personality=session.personality,
             job_type=session.config.job_type
         )
@@ -381,8 +382,8 @@ class InterviewEngine:
 
         current_question = session.current_question
 
-        # 英文回答先翻译成中文，再与题库匹配/评估
-        answer = self._normalize_answer(answer)
+        # 英文回答翻译成中文仅用于评估；记录里保存原文
+        evaluation_answer = self._normalize_answer(answer)
 
         is_followup = session.is_answering_followup
         parent_question_id = None
@@ -406,7 +407,7 @@ class InterviewEngine:
             "personality": session.personality,
             "job_type": session.config.job_type,
             "should_evaluate": not is_followup,
-            "answer": answer  # 已翻译为中文的回答，供后台评估使用
+            "answer": evaluation_answer  # 已翻译为中文的回答，供后台评估使用
         }
 
     def evaluate_answer_async(
@@ -478,8 +479,8 @@ class InterviewEngine:
         session.is_answering_followup = False
 
         return {
-            "message": "追问答案已记录",
-            "feedback": "好的，我们继续下一题。"
+            "message": "Follow-up answer recorded",
+            "feedback": "Alright, let's move on to the next question."
         }
 
     def get_next_question(self, session_id: str) -> Optional[str]:
@@ -624,9 +625,9 @@ class InterviewEngine:
                 correct_rate=0.0,
                 total_time_minutes=total_time_minutes,
                 avg_time_per_question=0.0,
-                weak_areas=["未完成任何题目"],
+                weak_areas=["No questions were completed"],
                 strong_areas=[],
-                suggestions=["建议重新开始面试"],
+                suggestions=["Please restart the interview"],
                 answer_records=[]
             )
             self.data_service.save_report(session_id, empty_report)
