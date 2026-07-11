@@ -74,6 +74,8 @@ const CATEGORY_LABELS_EN: Record<string, string> = {
   "网安": "Network Security",
   "网络安全": "Network Security",
   "机器学习": "Machine Learning",
+  "深度学习": "Deep Learning",
+  "数据分析": "Data Analysis",
   "八股文": "CS Fundamentals",
   "其他": "General",
   "综合题目": "General"
@@ -824,8 +826,17 @@ export default function App() {
                             <div className="h-full w-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 translate-x-[-100%] group-hover:animate-shine" />
                         </div>
                         <div className="relative flex items-center justify-center gap-2 text-white font-medium text-sm tracking-wide">
-                          <span>Start</span>
-                          <ArrowRight className="w-4 h-4" />
+                          {isStarting ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              <span>Starting... (first launch may take a moment)</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Start</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </>
+                          )}
                         </div>
                       </button>
                     </div>

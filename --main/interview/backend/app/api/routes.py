@@ -63,6 +63,21 @@ def get_engine() -> InterviewEngine:
         )
     return _engine
 
+def _contains_chinese(text: str) -> bool:
+    return any('一' <= ch <= '鿿' for ch in (text or ""))
+
+
+def _to_english(engine: InterviewEngine, text: str) -> str:
+    """中文内容翻译成英文用于展示/播报；失败时返回原文"""
+    if not text or not _contains_chinese(text):
+        return text
+    try:
+        return engine.ai_service.translate_to_english(text)
+    except Exception as e:
+        logger.warning(f"English translation failed: {e}")
+        return text
+
+
 def _build_report_details(engine: InterviewEngine, session_id: str, job_type: str) -> List[Dict]:
     records = engine.data_service.get_answer_records(session_id)
     evaluations = engine.data_service.get_evaluations(session_id)
@@ -185,10 +200,11 @@ async def start_interview(session_id: str):
 
         opening, first_question = engine.start_interview(session_id)
 
+        # 界面/播报使用英文
         return StartInterviewResponse(
             session_id=session_id,
-            opening=opening,
-            first_question=first_question
+            opening=_to_english(engine, opening),
+            first_question=_to_english(engine, first_question)
         )
 
     except SessionNotFoundException as e:
@@ -376,7 +392,7 @@ async def get_next_question(session_id: str):
 
         return NextQuestionResponse(
             has_next=next_question is not None,
-            question=next_question,
+            question=_to_english(engine, next_question) if next_question else next_question,
             questions_answered=status_info['questions_answered'],
             max_questions=status_info['max_questions']
         )

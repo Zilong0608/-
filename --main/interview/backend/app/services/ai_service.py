@@ -279,6 +279,46 @@ class AIService:
             logger.error(f"Translation to Chinese failed: {e}")
             return text
 
+    def translate_to_english(self, text: str) -> str:
+        """
+        将中文题目/开场白翻译成英文（用于英文界面展示与语音播报）
+
+        Args:
+            text: 中文原文
+
+        Returns:
+            英文译文；失败时返回原文
+        """
+        if not text or not text.strip():
+            return text
+
+        prompt = (
+            "You are a professional technical interview translator. "
+            "Translate the following interviewer line into natural English.\n"
+            "Rules:\n"
+            "1. Keep technical terms, code and proper nouns as-is;\n"
+            "2. Be faithful — do not add or remove content;\n"
+            "3. Output ONLY the translation, no explanations.\n\n"
+            f"Text:\n{text}"
+        )
+
+        def _call():
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            if self._supports_temperature():
+                payload["temperature"] = 0.2
+            return self.client.chat.completions.create(**payload)
+
+        try:
+            response = self._call_with_retry(_call)
+            translated = (response.choices[0].message.content or "").strip()
+            return translated or text
+        except Exception as e:
+            logger.error(f"Translation to English failed: {e}")
+            return text
+
     def text_to_speech(
         self,
         text: str,
