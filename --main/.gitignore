@@ -1,0 +1,8 @@
+nul
+.env
+
+node_modules/
+voice-interview-ui/node_modules/
+__pycache__/
+*.pyc
+*.db

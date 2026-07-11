@@ -1,0 +1,37 @@
+{
+  "scan_time": "2026-01-16T20:45:11.969599",
+  "root_dir": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文",
+  "files": [
+    {
+      "path": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+      "name": "计算机基础篇（最强八股文）第五版 .pdf",
+      "suffix": ".pdf",
+      "size": 20214451,
+      "category": "未分类",
+      "parent_folder": "八股文",
+      "is_template": false,
+      "needs_ocr": false,
+      "md5": null
+    }
+  ],
+  "statistics": {
+    "total_files": 1,
+    "total_size": 20214451,
+    "by_format": {
+      ".pdf": {
+        "count": 1,
+        "size": 20214451
+      }
+    },
+    "by_category": {
+      "未分类": {
+        "count": 1,
+        "size": 20214451,
+        "templates": 0
+      }
+    },
+    "templates_count": 0,
+    "ocr_needed_count": 0,
+    "interview_files_count": 1
+  }
+}

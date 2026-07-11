@@ -1,0 +1,452 @@
+# -*- coding: utf-8 -*-
+"""
+AI 服务 - OpenAI API 封装
+"""
+
+import io
+import json
+import time
+from typing import Dict, Optional
+
+from openai import OpenAI
+from openai import OpenAIError, RateLimitError, APITimeoutError
+
+from ..utils.logger import get_logger
+from ..utils.exceptions import AIServiceException
+
+logger = get_logger("ai_service")
+
+
+class AIService:
+    """
+    AI 服务 - 封装所有 OpenAI API 调用
+    """
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = "gpt-4o",
+        max_retries: int = 3,
+        timeout: int = 30
+    ):
+        """
+        初始化
+
+        Args:
+            api_key: OpenAI API Key
+            model: 使用的模型
+            max_retries: 最大重试次数
+            timeout: 超时时间（秒）
+        """
+        self.client = OpenAI(api_key=api_key, timeout=timeout)
+        self.model = model
+        self.max_retries = max_retries
+        self.timeout = timeout
+
+        logger.info(f"AIService initialized with model: {model}")
+
+    def _is_gpt5(self, model: Optional[str] = None) -> bool:
+        name = (model or self.model or "").lower()
+        return name.startswith("gpt-5")
+
+    def _supports_temperature(self, model: Optional[str] = None) -> bool:
+        return not self._is_gpt5(model)
+
+    def evaluate_answer(
+        self,
+        prompt: str,
+        temperature: float = 0.3
+    ) -> Dict:
+        """
+        调用 GPT 评估答案
+
+        Args:
+            prompt: 评估 prompt
+            temperature: 温度参数（评估要稳定，温度低）
+
+        Returns:
+            评估结果（JSON格式）
+
+        Raises:
+            AIServiceException: AI服务调用失败
+        """
+        logger.debug("Calling AI to evaluate answer")
+
+        try:
+            def _call():
+                payload = {
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "response_format": {"type": "json_object"}
+                }
+                if self._supports_temperature():
+                    payload["temperature"] = temperature
+                return self.client.chat.completions.create(**payload)
+
+            response = self._call_with_retry(_call)
+
+            content = response.choices[0].message.content
+            result = json.loads(content)
+
+            logger.debug("Answer evaluation completed successfully")
+            return result
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse AI response as JSON: {e}")
+            raise AIServiceException(
+                "AI returned invalid JSON response",
+                original_error=e
+            )
+        except Exception as e:
+            logger.error(f"AI evaluation failed: {e}")
+            raise AIServiceException(
+                "Failed to evaluate answer",
+                original_error=e
+            )
+
+    def generate_followup(
+        self,
+        prompt: str,
+        temperature: float = 0.7
+    ) -> str:
+        """
+        生成追问
+
+        Args:
+            prompt: 追问 prompt
+            temperature: 温度参数（追问可以有创意）
+
+        Returns:
+            追问内容
+
+        Raises:
+            AIServiceException: AI服务调用失败
+        """
+        logger.debug("Calling AI to generate follow-up question")
+
+        try:
+            def _call():
+                payload = {
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+                if self._supports_temperature():
+                    payload["temperature"] = temperature
+                return self.client.chat.completions.create(**payload)
+
+            response = self._call_with_retry(_call)
+
+            followup = response.choices[0].message.content.strip()
+            logger.debug(f"Follow-up question generated: {followup[:50]}...")
+            return followup
+
+        except Exception as e:
+            logger.error(f"Failed to generate follow-up: {e}")
+            raise AIServiceException(
+                "Failed to generate follow-up question",
+                original_error=e
+            )
+
+    def generate_report(
+        self,
+        prompt: str,
+        temperature: float = 0.5
+    ) -> Dict:
+        """
+        生成面试报告
+
+        Args:
+            prompt: 报告生成 prompt
+            temperature: 温度参数
+
+        Returns:
+            报告内容（JSON格式）
+
+        Raises:
+            AIServiceException: AI服务调用失败
+        """
+        logger.debug("Calling AI to generate final report")
+
+        try:
+            def _call():
+                payload = {
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "response_format": {"type": "json_object"}
+                }
+                if self._supports_temperature():
+                    payload["temperature"] = temperature
+                return self.client.chat.completions.create(**payload)
+
+            response = self._call_with_retry(_call)
+
+            content = response.choices[0].message.content
+            result = json.loads(content)
+
+            logger.debug("Final report generated successfully")
+            return result
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse report JSON: {e}")
+            raise AIServiceException(
+                "AI returned invalid JSON for report",
+                original_error=e
+            )
+        except Exception as e:
+            logger.error(f"Failed to generate report: {e}")
+            raise AIServiceException(
+                "Failed to generate final report",
+                original_error=e
+            )
+
+    def generate_reference_answer(
+        self,
+        question: str,
+        job_type: str = ""
+    ) -> str:
+        """
+        生成简洁的标准答案（用于报告展示）
+        """
+        if not question:
+            return ""
+
+        prompt = (
+            f"你是资深{job_type or '技术'}面试官。"
+            "请针对下面问题给出简洁标准答案，要求："
+            "3-5条要点、每条不超过20字、总字数<=120。"
+            "只输出答案要点，不要额外解释。\n\n"
+            f"问题：{question}"
+        )
+
+        def _call():
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            if self._supports_temperature():
+                payload["temperature"] = 0.2
+            if self._is_gpt5():
+                payload["max_completion_tokens"] = 200
+            else:
+                payload["max_tokens"] = 200
+            return self.client.chat.completions.create(**payload)
+
+        try:
+            response = self._call_with_retry(_call)
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.error(f"Failed to generate reference answer: {e}")
+            raise AIServiceException(
+                "Failed to generate reference answer",
+                original_error=e
+            )
+
+    def translate_to_chinese(self, text: str) -> str:
+        """
+        将英文回答翻译成中文（用于与中文题库匹配和评估）
+
+        Args:
+            text: 原始英文文本
+
+        Returns:
+            中文译文；失败时返回原文
+        """
+        if not text or not text.strip():
+            return text
+
+        prompt = (
+            "你是专业的技术面试翻译。请把下面这段面试回答翻译成简体中文，要求：\n"
+            "1. 保留代码、API 名称、专有名词（如 TCP、React、Transformer）原样不译；\n"
+            "2. 忠实原意，不增加、不删减内容；\n"
+            "3. 只输出译文，不要任何解释。\n\n"
+            f"原文：\n{text}"
+        )
+
+        def _call():
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            if self._supports_temperature():
+                payload["temperature"] = 0.2
+            return self.client.chat.completions.create(**payload)
+
+        try:
+            response = self._call_with_retry(_call)
+            translated = (response.choices[0].message.content or "").strip()
+            return translated or text
+        except Exception as e:
+            logger.error(f"Translation to Chinese failed: {e}")
+            return text
+
+    def text_to_speech(
+        self,
+        text: str,
+        model: str = "gpt-4o-mini-tts-2025-12-15",
+        voice: str = "alloy",
+        response_format: str = "wav",
+        speed: Optional[float] = None
+    ) -> bytes:
+        """
+        文本转语音
+
+        Args:
+            text: 需要朗读的文本
+            model: TTS 模型
+            voice: 声音
+            response_format: 输出格式
+            speed: 语速（可选）
+
+        Returns:
+            音频字节
+        """
+        if not text:
+            return b""
+
+        def _call():
+            payload = {
+                "model": model,
+                "voice": voice,
+                "input": text,
+                "response_format": response_format
+            }
+            if speed is not None:
+                payload["speed"] = speed
+            return self.client.audio.speech.create(**payload)
+
+        try:
+            response = self._call_with_retry(_call)
+            if hasattr(response, "read"):
+                return response.read()
+            if hasattr(response, "content"):
+                return response.content
+            if isinstance(response, (bytes, bytearray)):
+                return bytes(response)
+            return b""
+        except Exception as e:
+            logger.error(f"TTS failed: {e}")
+            raise AIServiceException(
+                "Failed to synthesize speech",
+                original_error=e
+            )
+
+    def speech_to_text(
+        self,
+        audio_bytes: bytes,
+        filename: str = "audio.webm",
+        model: str = "gpt-realtime-mini-2025-12-15",
+        language: Optional[str] = "zh"
+    ) -> str:
+        """
+        è¯­éŸ³è½¬æ–‡å­—
+        """
+        if not audio_bytes:
+            return ""
+
+        def _call():
+            buf = io.BytesIO(audio_bytes)
+            buf.name = filename or "audio.webm"
+            payload = {
+                "model": model,
+                "file": buf
+            }
+            if language:
+                payload["language"] = language
+            return self.client.audio.transcriptions.create(**payload)
+
+        try:
+            response = self._call_with_retry(_call)
+            if hasattr(response, "text"):
+                return response.text or ""
+            if isinstance(response, dict):
+                return response.get("text", "") or ""
+            return ""
+        except Exception as e:
+            logger.error(f"STT failed: {e}")
+            raise AIServiceException(
+                "Failed to transcribe audio",
+                original_error=e
+            )
+
+    def _call_with_retry(self, func, backoff: float = 2.0):
+        """
+        带重试的 API 调用
+
+        Args:
+            func: 要调用的函数
+            backoff: 退避倍数
+
+        Returns:
+            API 响应
+
+        Raises:
+            AIServiceException: 重试失败
+        """
+        last_exception = None
+
+        for attempt in range(self.max_retries):
+            try:
+                return func()
+
+            except RateLimitError as e:
+                last_exception = e
+                wait_time = backoff ** attempt
+                logger.warning(
+                    f"Rate limit hit, retrying in {wait_time}s "
+                    f"(attempt {attempt + 1}/{self.max_retries})"
+                )
+                time.sleep(wait_time)
+
+            except APITimeoutError as e:
+                last_exception = e
+                logger.warning(
+                    f"API timeout, retrying "
+                    f"(attempt {attempt + 1}/{self.max_retries})"
+                )
+                time.sleep(backoff ** attempt)
+
+            except OpenAIError as e:
+                # 其他 OpenAI 错误，直接抛出
+                logger.error(f"OpenAI API error: {e}")
+                raise AIServiceException(str(e), original_error=e)
+
+            except Exception as e:
+                # 未知错误，直接抛出
+                logger.error(f"Unexpected error in AI call: {e}")
+                raise AIServiceException(
+                    "Unexpected error during AI call",
+                    original_error=e
+                )
+
+        # 所有重试都失败
+        logger.error(f"All {self.max_retries} retries failed")
+        raise AIServiceException(
+            f"Failed after {self.max_retries} retries",
+            original_error=last_exception
+        )
+
+    def test_connection(self) -> bool:
+        """
+        测试 AI 服务连接
+
+        Returns:
+            True if connection successful, False otherwise
+        """
+        try:
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": "Hello"}]
+            }
+            if self._is_gpt5():
+                payload["max_completion_tokens"] = 5
+            else:
+                payload["max_tokens"] = 5
+            if self._supports_temperature():
+                payload["temperature"] = 0.2
+            response = self.client.chat.completions.create(**payload)
+            logger.info("AI service connection test successful")
+            return True
+
+        except Exception as e:
+            logger.error(f"AI service connection test failed: {e}")
+            return False

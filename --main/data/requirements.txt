@@ -1,0 +1,30 @@
+# RAG知识库构建系统依赖
+
+# 核心依赖
+chardet>=5.0.0                  # 文件编码检测
+
+# PDF处理
+PyMuPDF>=1.23.0                 # PDF文本提取 (fitz)
+pdfplumber>=0.10.0              # PDF表格提取（可选）
+
+# Word文档处理
+python-docx>=1.0.0              # docx文件处理
+# pywin32>=306                  # Windows下处理doc文件（Windows专用，可选）
+
+# OCR
+paddlepaddle>=2.5.0             # PaddleOCR依赖
+paddleocr>=2.7.0                # OCR识别
+# pytesseract>=0.3.10           # Tesseract OCR（可选替代）
+Pillow>=10.0.0                  # 图像处理
+
+# 向量化和检索
+sentence-transformers>=2.2.0    # Embedding模型
+chromadb>=0.4.0                 # 向量数据库
+# faiss-cpu>=1.7.4              # FAISS（可选替代Chroma）
+
+# 数据处理
+numpy>=1.24.0
+tqdm>=4.65.0                    # 进度条
+
+# 可选依赖（根据需要安装）
+# textract>=1.6.5               # 多格式文本提取（需要额外系统依赖）

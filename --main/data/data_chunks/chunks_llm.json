@@ -1,0 +1,898 @@
+[
+  {
+    "chunk_id": "qa_000001",
+    "content": "在浏览器中输入URL并按下回车之后会发生什么\n\n1. 第一步：输入URL并解析，浏览器会解析出协议、主机、端口、路径等信息，并构造一个HTTP请求。2. 第二步：DNS域名解析，将域名解析成对应的IP地址。3. 第三步：建立起TCP连接之三次握手。4. 第四步：浏览器发送HTTP/HTTPS请求到web服务器。5. 第五步：服务器处理HTTP请求并返回HTTP报文。6. 第六步：浏览器渲染页面。7. 第七步：断开连接之TCP四次挥手。",
+    "question": "在浏览器中输入URL并按下回车之后会发生什么",
+    "answer": "1. 第一步：输入URL并解析，浏览器会解析出协议、主机、端口、路径等信息，并构造一个HTTP请求。2. 第二步：DNS域名解析，将域名解析成对应的IP地址。3. 第三步：建立起TCP连接之三次握手。4. 第四步：浏览器发送HTTP/HTTPS请求到web服务器。5. 第五步：服务器处理HTTP请求并返回HTTP报文。6. 第六步：浏览器渲染页面。7. 第七步：断开连接之TCP四次挥手。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 219,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000002",
+    "content": "DNS是什么\n\nDNS（Domain Name System）是一种用于将域名（例如www.baidu.com）转换为IP地址（例如220.181.111.188）的分布式系统。",
+    "question": "DNS是什么",
+    "answer": "DNS（Domain Name System）是一种用于将域名（例如www.baidu.com）转换为IP地址（例如220.181.111.188）的分布式系统。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 89,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000003",
+    "content": "DNS解析过程\n\n1. 先查询浏览器缓存是否有该域名对应的IP地址。2. 如果浏览器缓存中没有，会去计算机本地的Host文件中查询是否有对应的缓存。3. 如果Host文件中也没有则会向本地的DNS服务器发送一个DNS查询请求。4. 如果本地DNS解析器有该域名的ip地址，就会直接返回，如果没有缓存该域名的解析记录，它会向根DNS服务器发出查询请求。5. 本地DNS解析器接着向指定的顶级域名DNS服务器发出查询请求。6. 本地DNS解析器最后向权威DNS服务器发送查询请求。7. 本地DNS解析器将收到的IP地址返回给浏览器，并且还会将域名解析结果缓存在本地。8. 浏览器发起连接。",
+    "question": "DNS解析过程",
+    "answer": "1. 先查询浏览器缓存是否有该域名对应的IP地址。2. 如果浏览器缓存中没有，会去计算机本地的Host文件中查询是否有对应的缓存。3. 如果Host文件中也没有则会向本地的DNS服务器发送一个DNS查询请求。4. 如果本地DNS解析器有该域名的ip地址，就会直接返回，如果没有缓存该域名的解析记录，它会向根DNS服务器发出查询请求。5. 本地DNS解析器接着向指定的顶级域名DNS服务器发出查询请求。6. 本地DNS解析器最后向权威DNS服务器发送查询请求。7. 本地DNS解析器将收到的IP地址返回给浏览器，并且还会将域名解析结果缓存在本地。8. 浏览器发起连接。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 292,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000004",
+    "content": "HTTP特性与简述\n\n特性：简单、灵活、易于扩展、应用广泛和跨平台。简述：Web上的通信都是建立在HTTP协议上的，客户端发起HTTP请求，服务器做出响应处理后，返回HTTP响应报文。",
+    "question": "HTTP特性与简述",
+    "answer": "特性：简单、灵活、易于扩展、应用广泛和跨平台。简述：Web上的通信都是建立在HTTP协议上的，客户端发起HTTP请求，服务器做出响应处理后，返回HTTP响应报文。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 92,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000005",
+    "content": "HTTP版本演变\n\n1. HTTP/1.0：引入了请求头和响应头，支持多种请求方法和状态码。2. HTTP/1.1：提出了长连接（持久连接），只要客户端和服务器任意一端没有明确提出断开连接，则保持TCP连接状态。3. HTTP/2.0：正在制定中，但还未得到广泛的使用。",
+    "question": "HTTP版本演变",
+    "answer": "1. HTTP/1.0：引入了请求头和响应头，支持多种请求方法和状态码。2. HTTP/1.1：提出了长连接（持久连接），只要客户端和服务器任意一端没有明确提出断开连接，则保持TCP连接状态。3. HTTP/2.0：正在制定中，但还未得到广泛的使用。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 135,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000006",
+    "content": "什么是三次握手\n\n三次握手是建立TCP连接的过程，1. 第一次握手：客户端发送SYN报文，表示发起连接。2. 第二次握手：服务端收到SYN报文后，发送SYN+ACK报文，表示接受请求。3. 第三次握手：客户端发送ACK报文，表示确认连接。",
+    "question": "什么是三次握手",
+    "answer": "三次握手是建立TCP连接的过程，1. 第一次握手：客户端发送SYN报文，表示发起连接。2. 第二次握手：服务端收到SYN报文后，发送SYN+ACK报文，表示接受请求。3. 第三次握手：客户端发送ACK报文，表示确认连接。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 119,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000007",
+    "content": "为什么需要三次握手\n\n1. 三次握手才能保证双方具有接收和发送的能力。2. 三次握手才能阻止重复历史连接的初始化。3. 三次握手才能同步双方的初始序列号。4. 三次握手才能避免资源浪费。",
+    "question": "为什么需要三次握手",
+    "answer": "1. 三次握手才能保证双方具有接收和发送的能力。2. 三次握手才能阻止重复历史连接的初始化。3. 三次握手才能同步双方的初始序列号。4. 三次握手才能避免资源浪费。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 93,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000008",
+    "content": "TCP四次挥手的过程\n\n1. 第一次挥手：客户端发送FIN报文给服务端。2. 第二次挥手：服务端发送ACK报文给客户端。3. 第三次挥手：服务端发送FIN报文给客户端。4. 第四次挥手：客户端发送ACK报文给服务端。",
+    "question": "TCP四次挥手的过程",
+    "answer": "1. 第一次挥手：客户端发送FIN报文给服务端。2. 第二次挥手：服务端发送ACK报文给客户端。3. 第三次挥手：服务端发送FIN报文给客户端。4. 第四次挥手：客户端发送ACK报文给服务端。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 108,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000009",
+    "content": "为什么挥手需要四次\n\n关闭连接时，客户端发送FIN报文，表示其不再发送数据，但还可以接收数据。服务端收到FIN报文后，先回ACK报文，等到其不再发送数据时，才发送FIN报文给客户端。",
+    "question": "为什么挥手需要四次",
+    "answer": "关闭连接时，客户端发送FIN报文，表示其不再发送数据，但还可以接收数据。服务端收到FIN报文后，先回ACK报文，等到其不再发送数据时，才发送FIN报文给客户端。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 91,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000010",
+    "content": "TIME_WAIT状态的作用\n\n1. 防止历史连接中的数据被后面相同四元组的连接错误的接收。2. 保证被动关闭连接的一方能被正确的关闭。",
+    "question": "TIME_WAIT状态的作用",
+    "answer": "1. 防止历史连接中的数据被后面相同四元组的连接错误的接收。2. 保证被动关闭连接的一方能被正确的关闭。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 68,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000011",
+    "content": "TCP的重传机制\n\n1. 超时重传：设定一个计时器，当超过指定的时间后，没有收到对方的确认ACK应答报文，就会重发该数据。2. 快速重传：当收到三个相同的ACK报文时，会在定时器过期之前，重传丢失的报文段。3. SACK（选择性确认）：可以将已收到的数据的信息发送给发送方，发送方就可以知道哪些数据收到了，哪些数据没收到。",
+    "question": "TCP的重传机制",
+    "answer": "1. 超时重传：设定一个计时器，当超过指定的时间后，没有收到对方的确认ACK应答报文，就会重发该数据。2. 快速重传：当收到三个相同的ACK报文时，会在定时器过期之前，重传丢失的报文段。3. SACK（选择性确认）：可以将已收到的数据的信息发送给发送方，发送方就可以知道哪些数据收到了，哪些数据没收到。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 161,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000012",
+    "content": "程序是如何表示发送方的四个部分的呢？\n\nTCP 滑动窗口方案使用三个指针来跟踪在四个传输类别中的每一个类别中的字节。其中两个指针是绝对指针（指特定的序列号），一个是相对指针（需要做偏移）。SND.WND ：表示发送窗口的大小（大小是由接收方指定的）；SND.UNA ：是一个绝对指针，它指向的是已发送但未收到确认的第一个字节的序列号，也就是 #2 的第一个字节。SND.NXT ：也是一个绝对指针，它指向未发送但可发送范围的第一个字节的序列号，也就是 #3 的第一个字。指向 #4 的第一个字节是个相对指针，它需要 SND.UNA 指针加上SND.WND 大小的偏移量，就可以指向 #4 的第一个字节了。可用窗口大小 = 发送窗口 - 已发送未确认(SND.WND -（SND.NXT - SND.UNA))",
+    "question": "程序是如何表示发送方的四个部分的呢？",
+    "answer": "TCP 滑动窗口方案使用三个指针来跟踪在四个传输类别中的每一个类别中的字节。其中两个指针是绝对指针（指特定的序列号），一个是相对指针（需要做偏移）。SND.WND ：表示发送窗口的大小（大小是由接收方指定的）；SND.UNA ：是一个绝对指针，它指向的是已发送但未收到确认的第一个字节的序列号，也就是 #2 的第一个字节。SND.NXT ：也是一个绝对指针，它指向未发送但可发送范围的第一个字节的序列号，也就是 #3 的第一个字。指向 #4 的第一个字节是个相对指针，它需要 SND.UNA 指针加上SND.WND 大小的偏移量，就可以指向 #4 的第一个字节了。可用窗口大小 = 发送窗口 - 已发送未确认(SND.WND -（SND.NXT - SND.UNA))",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 354,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000013",
+    "content": "如何创建命名管道？\n\n通过函数 mkfifo(const char *pathname, mode_t mode) 创建命名管道。成功时返回 0，失败时返回 -1。",
+    "question": "如何创建命名管道？",
+    "answer": "通过函数 mkfifo(const char *pathname, mode_t mode) 创建命名管道。成功时返回 0，失败时返回 -1。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 82,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000014",
+    "content": "命名管道与匿名管道有什么不同？\n\n命名管道（FIFO）在文件系统中作为一个特殊的文件存在，提供了路径名，允许不相关的进程通过该路径进行通信。与匿名管道不同，FIFO 的内容存放在内存中，且在使用 FIFO 的进程退出后，FIFO 文件仍然保留在文件系统中。",
+    "question": "命名管道与匿名管道有什么不同？",
+    "answer": "命名管道（FIFO）在文件系统中作为一个特殊的文件存在，提供了路径名，允许不相关的进程通过该路径进行通信。与匿名管道不同，FIFO 的内容存放在内存中，且在使用 FIFO 的进程退出后，FIFO 文件仍然保留在文件系统中。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 128,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000015",
+    "content": "信号量的基本操作是什么？\n\n信号量的基本操作有 P（Wait）操作和 V（Signal）操作。P 操作会将信号量减去 1，若信号量小于 0，则进程阻塞；V 操作会将信号量加上 1，若信号量小于等于 0，则唤醒阻塞的进程。",
+    "question": "信号量的基本操作是什么？",
+    "answer": "信号量的基本操作有 P（Wait）操作和 V（Signal）操作。P 操作会将信号量减去 1，若信号量小于 0，则进程阻塞；V 操作会将信号量加上 1，若信号量小于等于 0，则唤醒阻塞的进程。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 110,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000016",
+    "content": "如何创建无名管道？\n\n通过函数 int pipe(int pipefd[2]) 创建无名管道。创建成功返回 0，失败返回 -1。",
+    "question": "如何创建无名管道？",
+    "answer": "通过函数 int pipe(int pipefd[2]) 创建无名管道。创建成功返回 0，失败返回 -1。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 64,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000017",
+    "content": "如何创建 socket？\n\n通过函数 int socket(int domain, int type, int protocol) 创建 socket。domain 参数指定协议族，type 参数指定通信特性，protocol 参数通常写成 0。",
+    "question": "如何创建 socket？",
+    "answer": "通过函数 int socket(int domain, int type, int protocol) 创建 socket。domain 参数指定协议族，type 参数指定通信特性，protocol 参数通常写成 0。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 123,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000018",
+    "content": "如何初始化线程属性？\n\n通过函数 int pthread_attr_init(pthread_attr_t *attr) 初始化线程属性。",
+    "question": "如何初始化线程属性？",
+    "answer": "通过函数 int pthread_attr_init(pthread_attr_t *attr) 初始化线程属性。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 69,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000019",
+    "content": "如何销毁线程属性？\n\n通过函数 int pthread_attr_destroy(pthread_attr_t *attr) 销毁线程属性所占用的资源。",
+    "question": "如何销毁线程属性？",
+    "answer": "通过函数 int pthread_attr_destroy(pthread_attr_t *attr) 销毁线程属性所占用的资源。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 76,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000020",
+    "content": "如何设置线程的分离状态？\n\n通过函数设置线程分离状态，使用参数 attr 指定已初始化的线程属性，detachstate 参数可以是 PTHREAD_CREATE_DETACHED（分离线程）或 PTHREAD_CREATE_JOINABLE（非分离线程）。",
+    "question": "如何设置线程的分离状态？",
+    "answer": "通过函数设置线程分离状态，使用参数 attr 指定已初始化的线程属性，detachstate 参数可以是 PTHREAD_CREATE_DETACHED（分离线程）或 PTHREAD_CREATE_JOINABLE（非分离线程）。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 129,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000021",
+    "content": "如何获取线程的分离状态？\n\n通过函数 int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate) 获取线程的分离状态。",
+    "question": "如何获取线程的分离状态？",
+    "answer": "通过函数 int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate) 获取线程的分离状态。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 107,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000022",
+    "content": "如何设置线程的栈地址？\n\n通过函数 int pthread_attr_setstack(pthread_attr_t *attr, void *stackaddr, size_t stacksize) 设置线程的栈地址。",
+    "question": "如何设置线程的栈地址？",
+    "answer": "通过函数 int pthread_attr_setstack(pthread_attr_t *attr, void *stackaddr, size_t stacksize) 设置线程的栈地址。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 110,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000023",
+    "content": "如何获取线程的栈地址？\n\n通过函数 int pthread_attr_getstack(const pthread_attr_t *attr, void **stackaddr, size_t *stacksize) 获取线程的栈地址。",
+    "question": "如何获取线程的栈地址？",
+    "answer": "通过函数 int pthread_attr_getstack(const pthread_attr_t *attr, void **stackaddr, size_t *stacksize) 获取线程的栈地址。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 118,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000024",
+    "content": "如何避免僵尸进程？\n\n可以通过父进程调用 wait/waitpid 等函数等待子进程结束，或者在父进程中捕获 SIGCHLD 信号并在信号处理函数中调用 waitpid 以彻底结束子进程。",
+    "question": "如何避免僵尸进程？",
+    "answer": "可以通过父进程调用 wait/waitpid 等函数等待子进程结束，或者在父进程中捕获 SIGCHLD 信号并在信号处理函数中调用 waitpid 以彻底结束子进程。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 94,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000025",
+    "content": "守护进程的创建要点是什么？\n\n创建守护进程的要点包括：让程序在后台执行，调用 setsid() 创建新会话，关闭不再需要的文件描述符，将当前目录更改为根目录，清零文件创建屏蔽字，处理 SIGCHLD 信号。",
+    "question": "守护进程的创建要点是什么？",
+    "answer": "创建守护进程的要点包括：让程序在后台执行，调用 setsid() 创建新会话，关闭不再需要的文件描述符，将当前目录更改为根目录，清零文件创建屏蔽字，处理 SIGCHLD 信号。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 103,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000026",
+    "content": "进程切换为何比线程慢？\n\n进程切换涉及虚拟地址空间的切换，而线程共享同一进程的虚拟地址空间，因此线程切换不涉及虚拟地址空间的转换，导致进程切换比线程切换慢。",
+    "question": "进程切换为何比线程慢？",
+    "answer": "进程切换涉及虚拟地址空间的切换，而线程共享同一进程的虚拟地址空间，因此线程切换不涉及虚拟地址空间的转换，导致进程切换比线程切换慢。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 78,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000027",
+    "content": "如何将一个文件或者其它对象映射进内存?\n\n使用mmap函数，参数包括起始地址、映射长度、保护方式、映射特性、文件描述符和偏移量。",
+    "question": "如何将一个文件或者其它对象映射进内存?",
+    "answer": "使用mmap函数，参数包括起始地址、映射长度、保护方式、映射特性、文件描述符和偏移量。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 64,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000028",
+    "content": "mmap函数的参数有哪些?\n\n1. addr: 指定映射的起始地址, 通常设为NULL, 由系统指定. 2. length: 映射到内存的文件长度. 3. prot: 映射区的保护方式, 最常用的有PROT_READ, PROT_WRITE, PROT_READ | PROT_WRITE. 4. flags: 映射区的特性, 可以是MAP_SHARED或MAP_PRIVATE. 5. fd: 由open返回的文件描述符, 代表要映射的文件. 6. offset: 以文件开始处的偏移量, 必须是4k的整数倍, 通常为0.",
+    "question": "mmap函数的参数有哪些?",
+    "answer": "1. addr: 指定映射的起始地址, 通常设为NULL, 由系统指定. 2. length: 映射到内存的文件长度. 3. prot: 映射区的保护方式, 最常用的有PROT_READ, PROT_WRITE, PROT_READ | PROT_WRITE. 4. flags: 映射区的特性, 可以是MAP_SHARED或MAP_PRIVATE. 5. fd: 由open返回的文件描述符, 代表要映射的文件. 6. offset: 以文件开始处的偏移量, 必须是4k的整数倍, 通常为0.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 262,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000029",
+    "content": "mmap函数的返回值是什么?\n\n成功：返回创建的映射区首地址; 失败：MAP_FAILED宏.",
+    "question": "mmap函数的返回值是什么?",
+    "answer": "成功：返回创建的映射区首地址; 失败：MAP_FAILED宏.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 47,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000030",
+    "content": "使用mmap函数时需要注意哪些参数?\n\n1. 第一个参数写成NULL. 2. 第二个参数要映射的文件大小 > 0. 3. 第三个参数：PROT_READ 、PROT_WRITE. 4. 第四个参数：MAP_SHARED 或者 MAP_PRIVATE. 5. 第五个参数：打开的文件对应的文件描述符. 6. 第六个参数：4k的整数倍，通常为0.",
+    "question": "使用mmap函数时需要注意哪些参数?",
+    "answer": "1. 第一个参数写成NULL. 2. 第二个参数要映射的文件大小 > 0. 3. 第三个参数：PROT_READ 、PROT_WRITE. 4. 第四个参数：MAP_SHARED 或者 MAP_PRIVATE. 5. 第五个参数：打开的文件对应的文件描述符. 6. 第六个参数：4k的整数倍，通常为0.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 171,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000031",
+    "content": "munmap函数的参数是什么？\n\naddr 使⽤mmap函数创建的映射区的⾸地址; length 映射区的⼤⼩.",
+    "question": "munmap函数的参数是什么？",
+    "answer": "addr 使⽤mmap函数创建的映射区的⾸地址; length 映射区的⼤⼩.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 56,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000032",
+    "content": "创建映射区时需要注意哪些事项？\n\n1. 创建映射区的过程中，隐含着⼀次对映射⽂件的读操作; 2. 当MAP_SHARED时，要求：映射区的权限应 <=⽂件打开的权限; 3. 映射区的释放与⽂件关闭无关; 4. 映射⽂件⼤⼩必须大于0; 5. munmap传⼊的地址⼀定是mmap的返回地址; 6. 如果⽂件偏移量必须为4K的整数倍; 7. mmap创建映射区出错概率⾮常⾼，⼀定要检查返回值.",
+    "question": "创建映射区时需要注意哪些事项？",
+    "answer": "1. 创建映射区的过程中，隐含着⼀次对映射⽂件的读操作; 2. 当MAP_SHARED时，要求：映射区的权限应 <=⽂件打开的权限; 3. 映射区的释放与⽂件关闭无关; 4. 映射⽂件⼤⼩必须大于0; 5. munmap传⼊的地址⼀定是mmap的返回地址; 6. 如果⽂件偏移量必须为4K的整数倍; 7. mmap创建映射区出错概率⾮常⾼，⼀定要检查返回值.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 196,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000033",
+    "content": "为什么使用匿名的方式实现进程间通信？\n\n内存映射的需要依赖⽂件，而建立⽂件后需要unlink和close，比较麻烦.",
+    "question": "为什么使用匿名的方式实现进程间通信？",
+    "answer": "内存映射的需要依赖⽂件，而建立⽂件后需要unlink和close，比较麻烦.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 58,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000034",
+    "content": "Linux系统如何创建匿名映射区？\n\nLinux系统提供了创建匿名映射区的方法，无需依赖一个文件即可创建映射区，使用标志位参数flags来指定.",
+    "question": "Linux系统如何创建匿名映射区？",
+    "answer": "Linux系统提供了创建匿名映射区的方法，无需依赖一个文件即可创建映射区，使用标志位参数flags来指定.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 72,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000035",
+    "content": "消息队列的基本原理是什么？\n\nA进程要给B进程发送消息，A进程把数据放在对应的消息队列后就可以正常返回，B进程需要的时候再去读取数据.",
+    "question": "消息队列的基本原理是什么？",
+    "answer": "A进程要给B进程发送消息，A进程把数据放在对应的消息队列后就可以正常返回，B进程需要的时候再去读取数据.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 67,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000036",
+    "content": "消息队列的特点有哪些？\n\n1. 通信不及时，附件也有大小限制; 2. 不适合比较大数据的传输; 3. 存在用户态与内核态之间的数据拷贝开销.",
+    "question": "消息队列的特点有哪些？",
+    "answer": "1. 通信不及时，附件也有大小限制; 2. 不适合比较大数据的传输; 3. 存在用户态与内核态之间的数据拷贝开销.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 70,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000037",
+    "content": "信号的特点是什么？\n\n1. 简单; 2. 不能携带大量信息; 3. 满足某个特定条件才发送.",
+    "question": "信号的特点是什么？",
+    "answer": "1. 简单; 2. 不能携带大量信息; 3. 满足某个特定条件才发送.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 46,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000038",
+    "content": "一个完整的信号周期包括哪些步骤？\n\n1. 信号的产生; 2. 信号在进程中的注册，信号在进程中的注销; 3. 执行信号处理函数.",
+    "question": "一个完整的信号周期包括哪些步骤？",
+    "answer": "1. 信号的产生; 2. 信号在进程中的注册，信号在进程中的注销; 3. 执行信号处理函数.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 64,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000039",
+    "content": "信号编号的特点是什么？\n\n1. 不存在编号为0的信号; 2. 1-31号信号称为常规信号; 3. 34-64称为实时信号.",
+    "question": "信号编号的特点是什么？",
+    "answer": "1. 不存在编号为0的信号; 2. 1-31号信号称为常规信号; 3. 34-64称为实时信号.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 61,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000040",
+    "content": "需要记住的重要信号有哪些？\n\n1. SIGINT: 当用户按下<Ctrl+C>组合键时，终止进程; 2. SIGQUIT: 用户按下<ctrl+>组合键时，终止进程; 3. SIGSEGV: 指示进程进行了无效内存访问，终止进程; 4. SIGPIPE: Broken pipe向一个没有读端的管道写数据，终止进程; 5. SIGCHLD: 子进程结束时，父进程会收到这个信号.",
+    "question": "需要记住的重要信号有哪些？",
+    "answer": "1. SIGINT: 当用户按下<Ctrl+C>组合键时，终止进程; 2. SIGQUIT: 用户按下<ctrl+>组合键时，终止进程; 3. SIGSEGV: 指示进程进行了无效内存访问，终止进程; 4. SIGPIPE: Broken pipe向一个没有读端的管道写数据，终止进程; 5. SIGCHLD: 子进程结束时，父进程会收到这个信号.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 189,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000041",
+    "content": "信号的四要素是什么？\n\n1. 编号; 2. 名称; 3. 事件; 4. 默认处理动作.",
+    "question": "信号的四要素是什么？",
+    "answer": "1. 编号; 2. 名称; 3. 事件; 4. 默认处理动作.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 43,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000042",
+    "content": "如何给指定进程发送指定信号？\n\n可以通过调用 kill(pid_t pid, int sig) 函数来给指定进程发送指定信号。pid 取值有四种情况：pid > 0 将信号传送给进程 ID 为 pid 的进程；pid = 0 将信号传送给当前进程所在进程组中的所有进程；pid = -1 将信号传送给系统内所有的进程；pid < -1 将信号传给指定进程组的所有进程，这个进程组号等于 pid 的绝对值。",
+    "question": "如何给指定进程发送指定信号？",
+    "answer": "可以通过调用 kill(pid_t pid, int sig) 函数来给指定进程发送指定信号。pid 取值有四种情况：pid > 0 将信号传送给进程 ID 为 pid 的进程；pid = 0 将信号传送给当前进程所在进程组中的所有进程；pid = -1 将信号传送给系统内所有的进程；pid < -1 将信号传给指定进程组的所有进程，这个进程组号等于 pid 的绝对值。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 202,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000043",
+    "content": "信号的状态有哪些？\n\n信号的状态有三种：1. 产生状态：当用户按某些终端键时、硬件异常、软件异常、调用系统函数（如：kill、raise、abort）或运行 kill/killall 命令时将产生信号；2. 未决状态：没有被处理；3. 递达状态：信号被处理了。",
+    "question": "信号的状态有哪些？",
+    "answer": "信号的状态有三种：1. 产生状态：当用户按某些终端键时、硬件异常、软件异常、调用系统函数（如：kill、raise、abort）或运行 kill/killall 命令时将产生信号；2. 未决状态：没有被处理；3. 递达状态：信号被处理了。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 130,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000044",
+    "content": "什么是阻塞信号集和未决信号集？\n\n阻塞信号集是将某些信号加入集合，对它们设置屏蔽，当屏蔽 x 信号后，再收到该信号，该信号的处理将推后（处理发生在解除屏蔽后）。未决信号集合描述信号产生时的状态，未决信号集中对应位翻转为 1，表示信号处于未决状态。当信号被处理时对应位翻转回 0。",
+    "question": "什么是阻塞信号集和未决信号集？",
+    "answer": "阻塞信号集是将某些信号加入集合，对它们设置屏蔽，当屏蔽 x 信号后，再收到该信号，该信号的处理将推后（处理发生在解除屏蔽后）。未决信号集合描述信号产生时的状态，未决信号集中对应位翻转为 1，表示信号处于未决状态。当信号被处理时对应位翻转回 0。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 139,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000045",
+    "content": "如何使用 kill 函数？\n\nkill 函数用于给当前进程发送指定信号，等价于 kill(getpid(), sig)。成功返回 0，失败返回非 0 值。",
+    "question": "如何使用 kill 函数？",
+    "answer": "kill 函数用于给当前进程发送指定信号，等价于 kill(getpid(), sig)。成功返回 0，失败返回非 0 值。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 77,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000046",
+    "content": "如何给自己发送异常终止信号?\n\n可以使用SIGABRT信号，等价于kill(getpid(), SIGABRT)。",
+    "question": "如何给自己发送异常终止信号?",
+    "answer": "可以使用SIGABRT信号，等价于kill(getpid(), SIGABRT)。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 57,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000047",
+    "content": "如何设置定时器?\n\n使用alarm函数，在指定的seconds后，内核会给当前进程发送SIGALRM信号。",
+    "question": "如何设置定时器?",
+    "answer": "使用alarm函数，在指定的seconds后，内核会给当前进程发送SIGALRM信号。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 53,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000048",
+    "content": "如何取消定时器?\n\n可以通过调用alarm(0)来取消定时器，并返回旧闹钟余下的秒数。",
+    "question": "如何取消定时器?",
+    "answer": "可以通过调用alarm(0)来取消定时器，并返回旧闹钟余下的秒数。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 43,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000049",
+    "content": "alarm函数的参数和返回值是什么?\n\n参数seconds是指定的时间，以秒为单位，返回值是0或剩余的秒数。",
+    "question": "alarm函数的参数和返回值是什么?",
+    "answer": "参数seconds是指定的时间，以秒为单位，返回值是0或剩余的秒数。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 54,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000050",
+    "content": "如何设置定时器(闹钟)?\n\n可代替alarm函数。精度微秒us，可以实现周期定时。@param which 指定定时⽅式: (1) ⾃然定时：ITIMER_REAL → 14）SIGALRM计算⾃然时间; (2) 虚拟空间计时(⽤户空间)：ITIMER_VIRTUAL → 26）SIGVTALRM 只计算进程占⽤cpu的时间;",
+    "question": "如何设置定时器(闹钟)?",
+    "answer": "可代替alarm函数。精度微秒us，可以实现周期定时。@param which 指定定时⽅式: (1) ⾃然定时：ITIMER_REAL → 14）SIGALRM计算⾃然时间; (2) 虚拟空间计时(⽤户空间)：ITIMER_VIRTUAL → 26）SIGVTALRM 只计算进程占⽤cpu的时间;",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 164,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000051",
+    "content": "如何检查或修改信号阻塞集?\n\nsigprocmask函数检查或修改信号阻塞集，根据 how 指定的⽅法对进程的阻塞集合进⾏修改，新的信号阻塞集由 set 指定，⽽原先的信号阻塞集合由 oldset 保存.",
+    "question": "如何检查或修改信号阻塞集?",
+    "answer": "sigprocmask函数检查或修改信号阻塞集，根据 how 指定的⽅法对进程的阻塞集合进⾏修改，新的信号阻塞集由 set 指定，⽽原先的信号阻塞集合由 oldset 保存.",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 102,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000052",
+    "content": "如何避免僵⼫进程?\n\n最简单的⽅法: ⽗进程通过 wait() 和 waitpid() 等函数等待⼦进程结束，但是，这会导致⽗进程挂起; 如果⽗进程要处理的事情很多，不能够挂起，通过 signal() 函数⼈为处理信号 SIGCHLD: 只要有⼦进程退出⾃动调⽤指定好的回调函数，因为⼦进程结束后， ⽗进程会收到该信号 SIGCHLD ，可以在其回调函数⾥调⽤ wait() 或 waitpid() 回收; 如果⽗进程不关⼼⼦进程什么时候结束，那么可以⽤signal（SIGCHLD,  SIG_IGN）通知内核: ⾃⼰对⼦进程的结束不感兴趣，⽗进程忽略此信号，那么⼦进程结束后，内核会回收，并不再给⽗进程发送信号;",
+    "question": "如何避免僵⼫进程?",
+    "answer": "最简单的⽅法: ⽗进程通过 wait() 和 waitpid() 等函数等待⼦进程结束，但是，这会导致⽗进程挂起; 如果⽗进程要处理的事情很多，不能够挂起，通过 signal() 函数⼈为处理信号 SIGCHLD: 只要有⼦进程退出⾃动调⽤指定好的回调函数，因为⼦进程结束后， ⽗进程会收到该信号 SIGCHLD ，可以在其回调函数⾥调⽤ wait() 或 waitpid() 回收; 如果⽗进程不关⼼⼦进程什么时候结束，那么可以⽤signal（SIGCHLD,  SIG_IGN）通知内核: ⾃⼰对⼦进程的结束不感兴趣，⽗进程忽略此信号，那么⼦进程结束后，内核会回收，并不再给⽗进程发送信号;",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 308,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000053",
+    "content": "守护进程是什么?\n\n守护进程（Daemon Process），也就是通常说的 Daemon 进程（精灵进程），是 Linux 中的后台服务进程。它是⼀个⽣存期较⻓的进程，通常独⽴于控制终端并且周期性地执⾏某种任务或等待处理某些发⽣的事件。一般采⽤以d结尾的名字，所有的服务存在于 etc/init.d。守护进程是个特殊的孤⼉进程，之所以脱离于终端是为了避免进程被任何终端所产⽣的信息所打断，其在执⾏过程中的信息也不在任何终端上。Linux 的⼤多数服务器就是⽤守护进程实现的。",
+    "question": "守护进程是什么?",
+    "answer": "守护进程（Daemon Process），也就是通常说的 Daemon 进程（精灵进程），是 Linux 中的后台服务进程。它是⼀个⽣存期较⻓的进程，通常独⽴于控制终端并且周期性地执⾏某种任务或等待处理某些发⽣的事件。一般采⽤以d结尾的名字，所有的服务存在于 etc/init.d。守护进程是个特殊的孤⼉进程，之所以脱离于终端是为了避免进程被任何终端所产⽣的信息所打断，其在执⾏过程中的信息也不在任何终端上。Linux 的⼤多数服务器就是⽤守护进程实现的。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 238,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000054",
+    "content": "如何创建守护进程?\n\n创建⼦进程，⽗进程退出(必须)。所有⼯作在⼦进程中进⾏形式上脱离了控制终端。在⼦进程中创建新会话(必须)，使用setsid()函数使⼦进程完全独⽴出来，脱离控制。改变当前⽬录为根⽬录(不是必须)，使用chdir()函数防⽌占⽤可卸载的⽂件系统。重设⽂件权限掩码(不是必须)，使用umask()函数防⽌继承的⽂件创建屏蔽字拒绝某些权限。关闭⽂件描述符(不是必须)，继承的打开⽂件不会⽤到，浪费系统资源，⽆法卸载。开始执⾏守⽤进程核⼼⼯作(必须)。",
+    "question": "如何创建守护进程?",
+    "answer": "创建⼦进程，⽗进程退出(必须)。所有⼯作在⼦进程中进⾏形式上脱离了控制终端。在⼦进程中创建新会话(必须)，使用setsid()函数使⼦进程完全独⽴出来，脱离控制。改变当前⽬录为根⽬录(不是必须)，使用chdir()函数防⽌占⽤可卸载的⽂件系统。重设⽂件权限掩码(不是必须)，使用umask()函数防⽌继承的⽂件创建屏蔽字拒绝某些权限。关闭⽂件描述符(不是必须)，继承的打开⽂件不会⽤到，浪费系统资源，⽆法卸载。开始执⾏守⽤进程核⼼⼯作(必须)。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 233,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000055",
+    "content": "如何处理死锁?\n\n处理⽅法包括：1. 鸵⻦算法：假装根本没发⽣问题。2. 死锁检测与死锁恢复：通过检测有向图中是否存在环来实现。3. 从死锁中恢复：利用抢占恢复、利用回滚恢复、通过杀死进程恢复。4. 死锁预防：破坏互斥条件、破坏占有个等待条件、破坏不可抢占条件、破坏环路等待。5. 死锁避免：安全状态、单个资源的银行家算法、多种资源的银行家算法。",
+    "question": "如何处理死锁?",
+    "answer": "处理⽅法包括：1. 鸵⻦算法：假装根本没发⽣问题。2. 死锁检测与死锁恢复：通过检测有向图中是否存在环来实现。3. 从死锁中恢复：利用抢占恢复、利用回滚恢复、通过杀死进程恢复。4. 死锁预防：破坏互斥条件、破坏占有个等待条件、破坏不可抢占条件、破坏环路等待。5. 死锁避免：安全状态、单个资源的银行家算法、多种资源的银行家算法。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 173,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  },
+  {
+    "chunk_id": "qa_000056",
+    "content": "条件变量的作用是什么?\n\n条件变量是⽤来等待⽽不是⽤来上锁的，条件变量本身不是锁！条件变量⽤来⾃动阻塞⼀个线程，直到某特殊情况发⽣为⽌。通常条件变量和互斥锁同时使⽤。",
+    "question": "条件变量的作用是什么?",
+    "answer": "条件变量是⽤来等待⽽不是⽤来上锁的，条件变量本身不是锁！条件变量⽤来⾃动阻塞⼀个线程，直到某特殊情况发⽣为⽌。通常条件变量和互斥锁同时使⽤。",
+    "chunk_type": "qa",
+    "source_file": "C:\\Users\\15048\\Desktop\\AI面试官\\数据\\清洗后数据\\题库\\题库\\八股文\\计算机基础篇（最强八股文）第五版 .pdf",
+    "page_num": null,
+    "question_num": null,
+    "char_count": 83,
+    "metadata": {
+      "category": "未分类",
+      "llm": true,
+      "source_match": "最强八股文"
+    }
+  }
+]
