@@ -18,7 +18,7 @@ from .api import router, set_engine
 from .core.interview_engine import InterviewEngine
 from .core.personality_manager import PersonalityManager
 from .core.evaluation_engine import EvaluationEngine
-from .services.question_service import QuestionRepository, JsonQuestionRepository, SupabaseQuestionRepository
+from .services.question_factory import create_question_repository
 from .services.data_service import DataService
 from .services.ai_service import AIService
 from .utils.logger import setup_logger, get_logger
@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
         logger.info("Interview engine initialized successfully")
 
         # 测试连接（可通过环境变量跳过）
-        skip_tests = str(os.getenv("SKIP_STARTUP_TESTS", "0")).strip().lower() in {"1", "true", "yes", "y"}
+        skip_tests = str(os.getenv("SKIP_STARTUP_TESTS", "1")).strip().lower() in {"1", "true", "yes", "y"}
         if skip_tests:
             logger.info("Startup connection tests skipped (SKIP_STARTUP_TESTS=1)")
         else:
@@ -106,33 +106,7 @@ def initialize_engine() -> InterviewEngine:
 
     # 4. 初始化问题仓库 (JSON or RAG)
     rag_config = config['rag']
-    supabase_url = os.getenv('SUPABASE_URL')
-    supabase_key = os.getenv('SUPABASE_SERVICE_KEY')
-    supabase_table = os.getenv('SUPABASE_TABLE', 'interview_questions')
-    json_path = os.getenv('QUESTION_JSON_PATH')
-
-    if supabase_url and supabase_key:
-        question_repo = SupabaseQuestionRepository(
-            supabase_url=supabase_url,
-            supabase_key=supabase_key,
-            table_name=supabase_table,
-            preload_count=rag_config['preload_count'],
-            refill_threshold=rag_config['refill_threshold']
-        )
-        logger.info(f"Using Supabase question source: {supabase_url}")
-    elif json_path:
-        question_repo = JsonQuestionRepository(
-            json_path=json_path,
-            preload_count=rag_config['preload_count'],
-            refill_threshold=rag_config['refill_threshold']
-        )
-        logger.info(f"Using JSON question source: {json_path}")
-    else:
-        question_repo = QuestionRepository(
-            vector_store_path=os.getenv('RAG_VECTOR_STORE_PATH', '../data/data_index'),
-            preload_count=rag_config['preload_count'],
-            refill_threshold=rag_config['refill_threshold']
-        )
+    question_repo = create_question_repository(rag_config)
 
     # 5. 初始化数据服务
     db_type = os.getenv('DATABASE_TYPE', 'sqlite')
@@ -212,6 +186,12 @@ async def root():
         "version": "1.0.0",
         "docs": "/docs"
     }
+
+
+@app.get("/healthz", include_in_schema=False)
+async def liveness():
+    """Deployment probe: no external API calls or paid model requests."""
+    return {"status": "ok"}
 
 
 if __name__ == "__main__":
