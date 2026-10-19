@@ -4,6 +4,7 @@
 """
 
 from typing import Dict, Tuple, Optional
+import math
 
 from ..models import Question, Personality, EvaluationResult
 from ..services.ai_service import AIService
@@ -49,7 +50,8 @@ class EvaluationEngine:
         question: Question,
         user_answer: str,
         personality: Personality,
-        job_type: str
+        job_type: str,
+        conversation_context: str = ""
     ) -> EvaluationResult:
         """
         评估候选人答案
@@ -71,16 +73,6 @@ class EvaluationEngine:
         try:
             # 1. 构建评估 prompt
             reference_answer = (question.reference_answer or "").strip()
-            if not reference_answer:
-                try:
-                    reference_answer = self.ai_service.generate_reference_answer(
-                        question=question.content,
-                        job_type=job_type
-                    )
-                    question.reference_answer = reference_answer
-                except Exception as e:
-                    logger.warning(f"Failed to generate reference answer: {e}")
-                    reference_answer = ""
 
             prompt = build_evaluation_prompt(
                 job_type=job_type,
@@ -90,16 +82,25 @@ class EvaluationEngine:
                 reference_answer=reference_answer,
                 user_answer=user_answer
             )
+            prompt += (
+                f"\n面试官风格：{personality.name}。\n"
+                f"最近对话（仅作为背景，不重复考查）：\n{conversation_context or '无'}\n"
+            )
 
             # 2. 调用 AI 评估
             ai_result = self.ai_service.evaluate_answer(prompt)
 
             # 3. 提取评分
-            scores = {
-                "technical_accuracy": float(ai_result.get("technical_accuracy", 0)),
-                "clarity": float(ai_result.get("clarity", 0)),
-                "depth_breadth": float(ai_result.get("depth_breadth", 0))
-            }
+            scores = {}
+            for key in ("technical_accuracy", "clarity", "depth_breadth"):
+                value = float(ai_result[key])
+                if not math.isfinite(value):
+                    raise ValueError(f"Invalid score: {key}")
+                scores[key] = min(10.0, max(0.0, value))
+
+            def string_list(key):
+                value = ai_result.get(key, [])
+                return [item.strip() for item in value if isinstance(item, str) and item.strip()][:10] if isinstance(value, list) else []
 
             # 4. 应用人格评分倾向
             adjusted_scores = self.personality_manager.apply_evaluation_bias(
@@ -108,8 +109,8 @@ class EvaluationEngine:
             )
 
             # 5. 计算关键词覆盖率
-            keywords_hit = ai_result.get("keywords_hit", [])
-            keywords_missed = ai_result.get("keywords_missed", [])
+            keywords_hit = string_list("keywords_hit")
+            keywords_missed = string_list("keywords_missed")
             keyword_coverage = self._calculate_keyword_coverage(
                 keywords_hit,
                 keywords_missed
@@ -119,7 +120,11 @@ class EvaluationEngine:
             total_score = self._calculate_total_score(adjusted_scores)
 
             # 7. 判断是否需要追问
-            needs_followup = self._should_generate_followup(total_score)
+            followup = ai_result.get("followup_question")
+            followup = followup.strip() if isinstance(followup, str) else None
+            needs_followup = ai_result.get("needs_followup") is True and bool(followup)
+            feedback = ai_result.get("feedback")
+            feedback = feedback.strip() if isinstance(feedback, str) else ""
 
             # 8. 构建评估结果
             result = EvaluationResult(
@@ -131,10 +136,12 @@ class EvaluationEngine:
                 keywords_hit=keywords_hit,
                 keywords_missed=keywords_missed,
                 keyword_coverage=keyword_coverage,
-                weaknesses=ai_result.get("weaknesses", []),
-                suggestions=ai_result.get("suggestions", []),
+                weaknesses=string_list("weaknesses"),
+                suggestions=string_list("suggestions"),
                 total_score=total_score,
-                needs_followup=needs_followup
+                needs_followup=needs_followup,
+                followup_question=followup if needs_followup else None,
+                feedback=feedback
             )
 
             logger.info(

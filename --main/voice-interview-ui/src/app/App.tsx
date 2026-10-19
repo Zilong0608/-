@@ -246,6 +246,9 @@ export default function App() {
   const [statusMessage, setStatusMessage] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const turnBusyRef = useRef(false);
+  const [interviewerFeedback, setInterviewerFeedback] = useState("");
+  const [isFollowup, setIsFollowup] = useState(false);
   const [isIntroPlaying, setIsIntroPlaying] = useState(false);
   const [isReportLoading, setIsReportLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -259,11 +262,82 @@ export default function App() {
     loadPersonalities();
   }, []);
 
-  const toggleRecording = () => {
-    if (isIntroPlaying) {
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => () => {
+    if (recorderRef.current) {
+      recorderRef.current.onstop = null;
+      if (recorderRef.current.state !== "inactive") recorderRef.current.stop();
+    }
+    micStreamRef.current?.getTracks().forEach(track => track.stop());
+    audioRef.current?.pause();
+  }, []);
+
+  const toggleRecording = async () => {
+    if (isIntroPlaying || turnBusyRef.current) return;
+    if (recorderRef.current?.state === "recording") {
+      turnBusyRef.current = true;
+      recorderRef.current.stop();
+      setIsRecording(false);
       return;
     }
-    setIsRecording(!isRecording);
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setStatusMessage("Recording is unavailable in this browser. Please type your answer.");
+      return;
+    }
+    turnBusyRef.current = true;
+    let stream: MediaStream | null = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
+      const mimeType = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus"]
+        .find(type => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recorderRef.current = recorder;
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      recorder.onstop = async () => {
+        stream?.getTracks().forEach(track => track.stop());
+        setIsRecording(false);
+        setIsSubmitting(true);
+        turnBusyRef.current = true;
+        setStatusMessage("Transcribing your answer...");
+        try {
+          const blob = new Blob(chunks, { type: recorder.mimeType });
+          if (!blob.size) throw new Error("Empty recording");
+          const extension = blob.type.includes("mp4") ? "mp4" : blob.type.includes("ogg") ? "ogg" : "webm";
+          const form = new FormData();
+          form.append("file", blob, `answer.${extension}`);
+          const res = await apiFetch("/stt", { method: "POST", body: form });
+          const data = await res.json();
+          if (!data.text?.trim()) throw new Error("No speech detected");
+          setTextAnswer(previous => [previous.trim(), data.text.trim()].filter(Boolean).join(" "));
+          setIsTextInputOpen(true);
+          setStatusMessage("Review the transcript, then submit your answer.");
+        } catch {
+          setStatusMessage("Could not transcribe the recording. Please record again or type your answer.");
+        } finally {
+          recorderRef.current = null;
+          turnBusyRef.current = false;
+          setIsSubmitting(false);
+        }
+      };
+      recorder.onerror = () => {
+        stream?.getTracks().forEach(track => track.stop());
+        if (recorder.state !== "inactive") recorder.stop();
+        setIsRecording(false);
+        setStatusMessage("Recording was interrupted. Please try again.");
+      };
+      recorder.start();
+      setIsRecording(true);
+      setStatusMessage("");
+    } catch {
+      stream?.getTracks().forEach(track => track.stop());
+      setStatusMessage("Could not access the microphone. Check browser permissions or type your answer.");
+    } finally {
+      turnBusyRef.current = false;
+    }
   };
 
   const radarData = report
@@ -376,31 +450,30 @@ export default function App() {
         });
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
-        if (!audioRef.current) {
-          audioRef.current = new Audio();
-        }
-        audioRef.current.src = url;
         try {
-          await audioRef.current.play();
-        } catch (err) {
-          return;
-        }
-        await new Promise<void>((resolve) => {
+          if (!audioRef.current) audioRef.current = new Audio();
           const audio = audioRef.current;
-          if (!audio) {
-            resolve();
-            return;
-          }
-          const handleDone = () => {
-            audio.removeEventListener("ended", handleDone);
-            audio.removeEventListener("error", handleDone);
-            resolve();
-          };
-          audio.addEventListener("ended", handleDone);
-          audio.addEventListener("error", handleDone);
-        });
+          audio.src = url;
+          await new Promise<void>((resolve) => {
+            const handleDone = () => {
+              audio.removeEventListener("ended", handleDone);
+              audio.removeEventListener("error", handleDone);
+              resolve();
+            };
+            audio.addEventListener("ended", handleDone);
+            audio.addEventListener("error", handleDone);
+            audio.play().catch(() => {
+              setIsQuestionRevealed(true);
+              setStatusMessage("Audio could not play. You can read the question and continue.");
+              handleDone();
+            });
+          });
+        } finally {
+          URL.revokeObjectURL(url);
+        }
       } catch (err) {
-        return;
+        setIsQuestionRevealed(true);
+        setStatusMessage("Voice playback is unavailable. You can read the question and continue.");
       }
     };
     ttsQueueRef.current = ttsQueueRef.current.then(task).catch(() => {});
@@ -428,6 +501,8 @@ export default function App() {
       setSessionId(session.session_id);
       setReport(null);
       setQuestionIndex(0);
+      setInterviewerFeedback("");
+      setIsFollowup(false);
       setIsQuestionRevealed(false);
       setTextAnswer("");
 
@@ -448,32 +523,44 @@ export default function App() {
   }
 
   async function submitAnswer() {
-    if (isIntroPlaying) return;
-    if (!sessionId) return;
+    if (isIntroPlaying || turnBusyRef.current || !sessionId || isRecording) return;
     const answer = textAnswer.trim();
     if (!answer) {
-      setStatusMessage("Please type an answer first");
+      setStatusMessage("Please type or record an answer first");
       return;
     }
-    if (isSubmitting) return;
+    turnBusyRef.current = true;
+    setIsSubmitting(true);
+    setStatusMessage("Listening to your answer and preparing a response...");
     try {
-      setIsSubmitting(true);
-      await apiFetch(`/sessions/${sessionId}/answer-async`, {
-        method: "POST",
-        body: JSON.stringify({ answer })
+      const res = await apiFetch(`/sessions/${sessionId}/answer`, {
+        method: "POST", body: JSON.stringify({ answer })
       });
+      const data = await res.json();
       setTextAnswer("");
       setIsTextInputOpen(false);
+      setInterviewerFeedback(data.feedback || "");
       setStatusMessage("");
+      setIsIntroPlaying(true);
+      await speakText(data.feedback || "");
+      if (data.has_followup && data.followup_question) {
+        setIsFollowup(true);
+        setCurrentQuestion(data.followup_question);
+        setIsQuestionRevealed(true);
+        await speakText(data.followup_question);
+      } else {
+        await fetchNextQuestion();
+      }
     } catch (err) {
-      setStatusMessage("Failed to submit answer — please retry");
+      setStatusMessage("Could not complete this turn. Your answer is kept; please retry.");
     } finally {
+      setIsIntroPlaying(false);
       setIsSubmitting(false);
+      turnBusyRef.current = false;
     }
   }
 
   async function fetchNextQuestion() {
-    if (isIntroPlaying) return;
     if (!sessionId) return;
     try {
       const res = await apiFetch(`/sessions/${sessionId}/next-question`);
@@ -484,6 +571,7 @@ export default function App() {
       }
       setIsQuestionRevealed(false);
       setIsRecording(false);
+      setIsFollowup(false);
       setQuestionIndex(prev => prev + 1);
       setCurrentQuestion(data.question || "");
       await speakText(data.question || "");
@@ -493,11 +581,19 @@ export default function App() {
   }
 
   async function handleNext() {
-    if (isIntroPlaying) return;
+    if (isIntroPlaying || turnBusyRef.current || isRecording) return;
     if (textAnswer.trim()) {
       await submitAnswer();
+      return;
     }
-    await fetchNextQuestion();
+    turnBusyRef.current = true;
+    setIsIntroPlaying(true);
+    try {
+      await fetchNextQuestion();
+    } finally {
+      turnBusyRef.current = false;
+      setIsIntroPlaying(false);
+    }
   }
 
   async function endInterview() {
@@ -523,6 +619,11 @@ export default function App() {
   return (
     <div className="h-screen overflow-hidden bg-[#F8FAFC] text-slate-600 relative flex flex-col font-sans selection:bg-indigo-500/30 w-full items-center justify-center">
       
+      {statusMessage && (
+        <div role="status" className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-xl rounded-xl bg-slate-900 px-5 py-3 text-sm text-white shadow-lg">
+          {statusMessage}
+        </div>
+      )}
       {/* Dynamic Background */}
       
       <style>{`
@@ -949,10 +1050,10 @@ export default function App() {
                  {/* The Small Trigger Button */}
                  <button 
                     onClick={() => setIsQuestionRevealed(!isQuestionRevealed)}
-                    disabled={isIntroPlaying}
+                    disabled={isIntroPlaying || isSubmitting}
                     className={`bg-white/60 backdrop-blur-md border border-white/60 px-6 py-2 rounded-full shadow-sm text-xs font-bold tracking-widest text-slate-500 uppercase transition-all flex items-center gap-2 hover:bg-white/80 hover:text-indigo-600 hover:border-indigo-200 ${isQuestionRevealed ? 'mb-4' : ''}`}
                  >
-                    Current Question
+                    {isFollowup ? "Follow-up Question" : "Current Question"}
                     <motion.div animate={{ rotate: isQuestionRevealed ? 180 : 0 }}>
                        <ChevronDown className="w-3 h-3" />
                     </motion.div>
@@ -979,6 +1080,12 @@ export default function App() {
                     )}
                  </AnimatePresence>
               </div>
+
+              {interviewerFeedback && (
+                <p role="status" className="w-full text-center text-sm text-indigo-700 bg-white/60 rounded-xl px-4 py-3 max-h-24 overflow-y-auto">
+                  {interviewerFeedback}
+                </p>
+              )}
 
               {/* CENTER INTERACTION AREA - Orb vs Text Input Switch */}
               <div className="relative flex-1 flex items-center justify-center w-full min-h-0">
@@ -1124,7 +1231,7 @@ export default function App() {
                  <div className="flex justify-center md:justify-start">
                     <button 
                       onClick={() => setIsTextInputOpen(true)}
-                      disabled={isIntroPlaying}
+                      disabled={isIntroPlaying || isSubmitting}
                       className={`flex items-center gap-2 px-6 py-3 rounded-xl bg-white/40 border border-white/50 hover:bg-white/60 text-slate-700 transition-all text-sm font-medium shadow-sm hover:shadow-md group ${isTextInputOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                     >
                        <MessageSquare className="w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -1135,7 +1242,7 @@ export default function App() {
                  <div className="flex justify-center">
                     <button 
                       onClick={toggleRecording}
-                      disabled={isTextInputOpen || isIntroPlaying}
+                      disabled={isTextInputOpen || isIntroPlaying || isSubmitting}
                       className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all text-sm font-medium shadow-sm hover:shadow-md group 
                         ${isTextInputOpen ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'} 
                         ${isIntroPlaying ? 'opacity-50 pointer-events-none' : ''}
@@ -1165,7 +1272,7 @@ export default function App() {
                  <div className="flex justify-center md:justify-end">
                     <button 
                       onClick={handleNext}
-                      disabled={isIntroPlaying}
+                      disabled={isIntroPlaying || isSubmitting}
                       className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/40 border border-white/50 hover:bg-white/60 text-slate-700 transition-all text-sm font-medium shadow-sm hover:shadow-md group disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                        {questionIndex < MAX_QUESTIONS - 1 ? 'Skip / Next' : 'Finish Interview'}
@@ -1225,7 +1332,7 @@ export default function App() {
                         </div>
                         <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase">
                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                           Strong Candidate
+                           {overallScoreDisplay >= 80 ? "Strong Performance" : overallScoreDisplay >= 60 ? "Developing Well" : "More Practice Needed"}
                         </div>
                       </div>
                    </div>

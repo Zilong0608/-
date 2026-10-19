@@ -37,6 +37,7 @@ class EvaluationResult:
     followup_question: Optional[str] = None  # 追问内容
 
     evaluation_time: datetime = field(default_factory=datetime.now)
+    feedback: str = ""  # 本轮具体反馈，供交互使用
 
     def to_dict(self) -> dict:
         """转换为字典"""

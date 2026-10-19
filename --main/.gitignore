@@ -6,3 +6,10 @@ voice-interview-ui/node_modules/
 __pycache__/
 *.pyc
 *.db
+
+# Generated frontend output and local browser test artifacts
+voice-interview-ui/dist/
+interview/backend/tests/manual_results/
+interview/backend/tests/manual_browser_probe.py
+interview/backend/tests/manual_final_smoke.py
+interview/backend/tests/manual_rubric_recheck.py

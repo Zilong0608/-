@@ -374,7 +374,7 @@ class AIService:
         self,
         audio_bytes: bytes,
         filename: str = "audio.webm",
-        model: str = "gpt-realtime-mini-2025-12-15",
+        model: str = "gpt-4o-mini-transcribe",
         language: Optional[str] = "zh"
     ) -> str:
         """

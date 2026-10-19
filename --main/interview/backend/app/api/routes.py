@@ -274,7 +274,7 @@ async def submit_answer(session_id: str, request: SubmitAnswerRequest):
     """
     try:
         engine = get_engine()
-        result = engine.submit_answer(session_id, request.answer)
+        result = await asyncio.to_thread(engine.submit_answer, session_id, request.answer)
 
         return SubmitAnswerResponse(
             evaluation=EvaluationResponse(**result['evaluation']),
@@ -684,12 +684,12 @@ async def speech_to_text(
                 detail="Empty audio file"
             )
 
-        logger.info(f"STT request: filename={file.filename}, model={model or 'gpt-realtime-mini-2025-12-15'}")
+        logger.info(f"STT request: filename={file.filename}, model={model or 'gpt-4o-mini-transcribe'}")
         # 不再强制中文：不传 language 时自动检测，支持英文回答
-        text = engine.ai_service.speech_to_text(
+        text = await asyncio.to_thread(engine.ai_service.speech_to_text,
             audio_bytes=audio_bytes,
             filename=file.filename or "audio.webm",
-            model=(model or "gpt-realtime-mini-2025-12-15").strip(),
+            model=(model or "gpt-4o-mini-transcribe").strip(),
             language=language.strip() if language else None
         )
         logger.info(f"STT done: {len(text)} chars")

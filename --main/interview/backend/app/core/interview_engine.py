@@ -4,6 +4,8 @@
 """
 
 import uuid
+import re
+from threading import Lock
 from datetime import datetime
 from typing import Optional, Dict, Tuple
 
@@ -59,6 +61,7 @@ class InterviewEngine:
 
         # 运行时会话缓存
         self.active_sessions: Dict[str, InterviewSession] = {}
+        self._answer_locks: Dict[str, Lock] = {}
 
         logger.info("InterviewEngine initialized")
 
@@ -241,7 +244,18 @@ class InterviewEngine:
 
         return opening, first_question.content
 
-    def submit_answer(
+    def submit_answer(self, session_id: str, answer: str) -> Dict:
+        """Only one answer may change a session at a time."""
+        self._get_session(session_id)
+        lock = self._answer_locks.setdefault(session_id, Lock())
+        if not lock.acquire(blocking=False):
+            raise InvalidParameterException("answer", "an answer is already being processed")
+        try:
+            return self._submit_answer(session_id, answer)
+        finally:
+            lock.release()
+
+    def _submit_answer(
         self,
         session_id: str,
         answer: str
@@ -276,29 +290,30 @@ class InterviewEngine:
             )
 
         current_question = session.current_question
-
-        # 0. 英文回答先翻译成中文用于题库匹配/评估；
-        #    记录中保留用户原文，报告里展示原始回答
-        evaluation_answer = self._normalize_answer(answer)
-
-        # 1. 保存答题记录（保存原文）
+        answer = answer.strip()
+        if not answer:
+            raise InvalidParameterException("answer", "answer must not be blank")
+        if any(r.question.question_id == current_question.question_id for r in session.answer_records):
+            raise InvalidParameterException("answer", "this question has already been answered")
+        is_followup = session.is_answering_followup
+        context = "\n".join(
+            f"Question: {r.question.content[:800]}\nAnswer: {r.user_answer[:1600]}"
+            for r in session.answer_records[-4:]
+        )
+        evaluation = self.evaluation_engine.evaluate_answer(
+            question=current_question, user_answer=answer,
+            personality=session.personality, job_type=session.config.job_type,
+            conversation_context=context
+        )
+        if evaluation.weaknesses == ["AI evaluation unavailable"]:
+            raise InvalidParameterException("evaluation", "Evaluation unavailable; please retry your answer")
         answer_record = AnswerRecord(
-            question=current_question,
-            user_answer=answer,
-            is_followup=False,
-            parent_question_id=None,
+            question=current_question, user_answer=answer, is_followup=is_followup,
+            parent_question_id=current_question.question_id.removesuffix("_followup") if is_followup else None,
             answer_time=datetime.now()
         )
-        session.answer_records.append(answer_record)
         self.data_service.save_answer_record(session_id, answer_record)
-
-        # 2. 评估答案（用中文译文）
-        evaluation = self.evaluation_engine.evaluate_answer(
-            question=current_question,
-            user_answer=evaluation_answer,
-            personality=session.personality,
-            job_type=session.config.job_type
-        )
+        session.answer_records.append(answer_record)
 
         # 保存评估结果
         self.data_service.save_evaluation(
@@ -308,20 +323,15 @@ class InterviewEngine:
         )
 
         # 3. 生成人格化反馈
-        feedback = self.personality_manager.generate_feedback(
-            session.personality,
-            evaluation.total_score
+        feedback = evaluation.feedback or (
+            evaluation.weaknesses[0] if evaluation.weaknesses
+            else "Thank you. Let's continue with the next question."
         )
 
         # 4. 检查是否需要追问
         followup_question = None
-        if evaluation.needs_followup:
-            followup_question = self.evaluation_engine.generate_followup(
-                question=current_question,
-                user_answer=answer,
-                evaluation=evaluation,
-                personality=session.personality
-            )
+        if evaluation.needs_followup and session.config.enable_followup and not is_followup:
+            followup_question = evaluation.followup_question
 
             if followup_question:
                 # 创建追问的 Question 对象
@@ -526,6 +536,7 @@ class InterviewEngine:
             return None
 
         session.current_question = next_question
+        session.is_answering_followup = False
         if next_question.question_id not in session.asked_question_ids:
             session.asked_question_ids.append(next_question.question_id)
         return next_question.content
@@ -790,42 +801,50 @@ class InterviewEngine:
                 if not record.is_followup
             ]
 
-        # 从问题池获取
-        return self.question_repo.get_next_question(
-            exclude_ids=asked_ids,
-            job_type=session.config.job_type,
-            difficulty=session.config.difficulty,
-            question_category=session.config.question_category
-        )
+        excluded = list(asked_ids)
+        answered_texts = {
+            re.sub(r"\s+", "", record.question.content).casefold()
+            for record in session.answer_records
+        }
+        for _ in range(50):
+            question = self.question_repo.get_next_question(
+                exclude_ids=excluded,
+                job_type=session.config.job_type,
+                difficulty=session.config.difficulty,
+                question_category=session.config.question_category
+            )
+            if question is None:
+                return None
+            content = question.content.strip()
+            # Reject unmistakable extraction fragments, without rewriting bank data.
+            incomplete = not content or re.search(r"[:：]\s*[?？]\s*$", content)
+            fragment = re.match(r"^(?:不足点|缺点|优点|shortcoming)\s*#?\s*\d+\s*[:：]", content, re.I)
+            duplicate = re.sub(r"\s+", "", content).casefold() in answered_texts
+            if not (incomplete or fragment or duplicate):
+                return question
+            excluded.append(question.question_id)
+        logger.warning("No usable question found in the next 50 candidates")
+        return None
 
-    def _build_answer_details(
-            self,
-            answer_records: list,
-            evaluations_map: Dict
-        ) -> str:
-            """Build short answer details for report prompt."""
-            details = []
-    
-            main_records = [r for r in answer_records if not r.is_followup]
-    
-            for i, record in enumerate(main_records, 1):
-                eval_data = evaluations_map.get(record.question.question_id)
-                if not eval_data:
-                    continue
-    
-                eval_result = eval_data
-                if isinstance(eval_data, dict):
-                    eval_result = self._dict_to_evaluation(eval_data)
-    
-                details.append(
-                    f"Question {i}: {record.question.content[:60]}...\n"
-                    f"  Score: {eval_result.total_score:.1f}/10\n"
-                    f"  Weaknesses: {', '.join(eval_result.weaknesses[:2])}\n"
-                )
-    
-            return "\n".join(details) if details else "No answer records"
-    
-    
+    def _build_answer_details(self, answer_records: list, evaluations_map: Dict) -> str:
+        """Include actual evidence and follow-ups, rather than scores alone."""
+        details = []
+        for i, record in enumerate(answer_records, 1):
+            evaluation = evaluations_map.get(record.question.question_id)
+            if not evaluation:
+                continue
+            if isinstance(evaluation, dict):
+                evaluation = self._dict_to_evaluation(evaluation)
+            details.append(
+                f"Turn {i} ({'follow-up' if record.is_followup else 'main question'}): "
+                f"{record.question.content[:1200]}\n"
+                f"Candidate answer: {record.user_answer[:2400]}\n"
+                f"Score: {evaluation.total_score:.1f}/10\n"
+                f"Strength evidence: {', '.join(evaluation.keywords_hit[:5])}\n"
+                f"Weaknesses: {', '.join(evaluation.weaknesses[:3])}\n"
+            )
+        return "\n".join(details) if details else "No answer records"
+
     def _dict_to_evaluation(self, data: Dict) -> EvaluationResult:
         """将字典转换为 EvaluationResult 对象"""
         return EvaluationResult(
